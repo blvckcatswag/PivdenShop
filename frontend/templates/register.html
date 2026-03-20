@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Реєстрація — PivdenShop{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="auth-card">
+        <h1 class="auth-title">Реєстрація</h1>
+        <form id="register-form" class="auth-form" novalidate>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="your@email.com" required>
+                <span class="field-error" id="email-error"></span>
+            </div>
+            <div class="form-group">
+                <label for="phone">Телефон</label>
+                <input type="tel" id="phone" name="phone" placeholder="+380XXXXXXXXX" required>
+                <span class="field-error" id="phone-error"></span>
+            </div>
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" placeholder="Мінімум 6 символів" required>
+                <span class="field-error" id="password-error"></span>
+            </div>
+            <div class="form-group">
+                <label for="password_confirm">Підтвердити пароль</label>
+                <input type="password" id="password_confirm" name="password_confirm" placeholder="Повторіть пароль" required>
+                <span class="field-error" id="confirm-error"></span>
+            </div>
+            <div class="form-message" id="form-message"></div>
+            <button type="submit" class="btn-gradient">Зареєструватися</button>
+        </form>
+        <p class="auth-link">Вже є акаунт? <a href="/login">Увійти</a></p>
+    </div>
+</section>
+
+<script>
+document.getElementById('register-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+    document.getElementById('form-message').textContent = '';
+
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('password_confirm').value;
+
+    let valid = true;
+
+    if (!email || !email.includes('@')) {
+        document.getElementById('email-error').textContent = 'Введіть коректний email';
+        valid = false;
+    }
+    if (!phone) {
+        document.getElementById('phone-error').textContent = 'Введіть номер телефону';
+        valid = false;
+    }
+    if (password.length < 6) {
+        document.getElementById('password-error').textContent = 'Мінімум 6 символів';
+        valid = false;
+    }
+    if (password !== confirm) {
+        document.getElementById('confirm-error').textContent = 'Паролі не співпадають';
+        valid = false;
+    }
+
+    if (!valid) return;
+
+    try {
+        const resp = await fetch('/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email, phone, password})
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+            localStorage.setItem('token', data.token);
+            window.location.href = '/profile';
+        } else {
+            document.getElementById('form-message').textContent = data.error || 'Помилка реєстрації';
+        }
+    } catch (err) {
+        document.getElementById('form-message').textContent = 'Помилка з\'єднання з сервером';
+    }
+});
+</script>
+{% endblock %}

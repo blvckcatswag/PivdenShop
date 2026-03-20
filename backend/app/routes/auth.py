@@ -2,7 +2,7 @@ import datetime
 import hashlib
 
 import jwt
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, render_template
 
 from backend.app.models.user import create_user, find_user_by_email
 
@@ -22,8 +22,11 @@ def _generate_token(user):
     return jwt.encode(payload, current_app.config["JWT_SECRET_KEY"], algorithm="HS256")
 
 
-@auth_bp.route("/register", methods=["POST"])
+@auth_bp.route("/register", methods=["GET", "POST"])
 def register():
+    if request.method == "GET":
+        return render_template("register.html")
+
     data = request.get_json() or {}
 
     email = data.get("email")
@@ -44,8 +47,11 @@ def register():
     return jsonify({"token": token, "user": user}), 201
 
 
-@auth_bp.route("/login", methods=["POST"])
+@auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+    if request.method == "GET":
+        return render_template("login.html")
+
     data = request.get_json() or {}
 
     email = data.get("email")
