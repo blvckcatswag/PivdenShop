@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Редагування профілю — PivdenShop{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="auth-card" style="max-width:540px">
+        <h1 class="auth-title">Редагування профілю</h1>
+        <form id="edit-profile-form" class="auth-form" novalidate>
+            <div class="form-group">
+                <label for="full_name">Повне ім'я</label>
+                <input type="text" id="full_name" name="full_name" value="{{ user.full_name }}" placeholder="Ім'я Прізвище">
+            </div>
+            <div class="form-group">
+                <label for="phone">Телефон</label>
+                <input type="tel" id="phone" name="phone" value="{{ user.phone }}" placeholder="+380XXXXXXXXX">
+            </div>
+            <div class="form-group">
+                <label for="avatar_url">URL аватара</label>
+                <input type="text" id="avatar_url" name="avatar_url" value="{{ user.avatar_url }}" placeholder="https://...">
+            </div>
+            <div class="form-group">
+                <label for="bio">Про себе</label>
+                <textarea id="bio" name="bio" rows="4" placeholder="Розкажіть про себе...">{{ user.bio }}</textarea>
+            </div>
+            <div class="form-message" id="form-message"></div>
+            <div style="display:flex;gap:12px">
+                <button type="submit" class="btn-gradient" style="flex:1">Зберегти</button>
+                <a href="/profile" class="btn btn-outline" style="flex:1;text-align:center;padding:14px">Скасувати</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+<script>
+document.getElementById('edit-profile-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var msg = document.getElementById('form-message');
+    msg.textContent = '';
+
+    var token = localStorage.getItem('token');
+    if (!token) {
+        msg.textContent = 'Увійдіть для редагування профілю';
+        return;
+    }
+
+    var data = {
+        name: document.getElementById('full_name').value,
+        phone: document.getElementById('phone').value,
+        avatar_url: document.getElementById('avatar_url').value,
+        bio: document.getElementById('bio').value
+    };
+
+    try {
+        var resp = await fetch('/api/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify(data)
+        });
+        var result = await resp.json();
+        if (resp.ok) {
+            msg.style.color = 'var(--success)';
+            msg.textContent = 'Профіль оновлено!';
+        } else {
+            msg.textContent = result.error || 'Помилка оновлення';
+        }
+    } catch (err) {
+        msg.textContent = 'Помилка з\'єднання з сервером';
+    }
+});
+</script>
+{% endblock %}
