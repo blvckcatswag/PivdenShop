@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Кошик — PivdenShop{% endblock %}
+
+{% block content %}
+<section class="section">
+    <h1 class="section-title">Кошик</h1>
+
+    <div id="cart-container">
+        {% if items %}
+        <table class="orders-table" id="cart-table">
+            <thead>
+                <tr>
+                    <th>Товар</th>
+                    <th>Ціна</th>
+                    <th>Кількість</th>
+                    <th>Сума</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr data-item-id="{{ item.id }}">
+                    <td>
+                        <div style="display:flex;align-items:center;gap:12px">
+                            <div class="cart-item-icon">
+                                {% if item.category == 'Електроніка' %}&#128187;{% elif item.category == 'Одяг' %}&#128085;{% elif item.category == 'Дім' %}&#127968;{% elif item.category == 'Спорт' %}&#9917;{% elif item.category == 'Краса' %}&#128132;{% else %}&#128230;{% endif %}
+                            </div>
+                            <div>
+                                <div style="font-weight:600">{{ item.title }}</div>
+                                <div style="font-size:0.8rem;color:var(--text-secondary)">{{ item.seller_name }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ "%.0f"|format(item.price) }} грн</td>
+                    <td>
+                        <input type="number" class="cart-qty" value="{{ item.quantity }}" data-price="{{ item.price }}">
+                    </td>
+                    <td class="cart-subtotal">{{ "%.0f"|format(item.subtotal) }} грн</td>
+                    <td>
+                        <button class="btn btn-outline btn-sm cart-remove" data-id="{{ item.id }}">&#10005;</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="cart-footer">
+            <div class="cart-total">
+                Разом: <span id="cart-total">{{ "%.0f"|format(total) }}</span> грн
+            </div>
+            <a href="/checkout" class="btn btn-gradient">Оформити замовлення</a>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>Кошик порожній</p>
+            <a href="/products" class="btn btn-gradient">Перейти до каталогу</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+document.querySelectorAll('.cart-remove').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var itemId = this.dataset.id;
+        var token = localStorage.getItem('token');
+        fetch('/api/cart/' + itemId, {
+            method: 'DELETE',
+            headers: {'Authorization': 'Bearer ' + token}
+        }).then(function() {
+            location.reload();
+        });
+    });
+});
+
+document.querySelectorAll('.cart-qty').forEach(function(input) {
+    input.addEventListener('change', function() {
+        var row = this.closest('tr');
+        var price = parseFloat(this.dataset.price);
+        var qty = parseInt(this.value);
+        var subtotal = price * qty;
+        row.querySelector('.cart-subtotal').textContent = subtotal + ' грн';
+
+        var total = 0;
+        document.querySelectorAll('.cart-qty').forEach(function(inp) {
+            total += parseFloat(inp.dataset.price) * parseInt(inp.value);
+        });
+        document.getElementById('cart-total').textContent = total;
+    });
+});
+</script>
+{% endblock %}
