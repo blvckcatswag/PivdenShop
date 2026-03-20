@@ -27,6 +27,9 @@ def create_app(testing=False):
 
     with app.app_context():
         init_db(app)
+        if not testing:
+            from backend.seed import run_seed
+            run_seed()
 
     specs_dir = os.path.join(os.path.dirname(__file__), "..", "..", "docs", "api")
     app.config["SWAGGER"] = {
@@ -53,8 +56,10 @@ def create_app(testing=False):
     from backend.app.routes.auth import auth_bp
     from backend.app.routes.profile import profile_bp
     from backend.app.routes.products import products_bp
+    from backend.app.routes.main import main_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(profile_bp)
     app.register_blueprint(products_bp)
+    app.register_blueprint(main_bp)
 
     return app

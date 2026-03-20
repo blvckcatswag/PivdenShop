@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PivdenShop{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    {% include "header.html" %}
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 PivdenShop. Усі права захищені.</p>
+        </div>
+    </footer>
+
+    <div class="modal-overlay" id="product-modal" onclick="if(event.target===this)closeModal()">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div class="modal-image">📦</div>
+            <div class="modal-body">
+                <h2 id="modal-title"></h2>
+                <div class="price" id="modal-price"></div>
+                <p class="description" id="modal-description"></p>
+                <div class="seller-info">
+                    <div class="seller-avatar">S</div>
+                    <div>
+                        <div style="font-weight:600" id="modal-seller"></div>
+                        <div style="font-size:0.8rem;color:var(--text-secondary)">Продавець</div>
+                    </div>
+                </div>
+                <div class="modal-reviews">
+                    <h3>Відгуки</h3>
+                    <div id="modal-reviews"></div>
+                </div>
+                <div style="margin-top:20px;display:flex;gap:12px">
+                    <button class="btn btn-gradient" onclick="alert('Додано в кошик!')">Додати в кошик</button>
+                    <button class="btn btn-outline" onclick="closeModal()">Закрити</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

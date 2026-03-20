@@ -1,0 +1,50 @@
+<header class="header">
+    <div class="container">
+        <div class="header-top">
+            <a href="/" class="logo">PivdenShop</a>
+
+            <form class="search-form" action="/search" method="GET">
+                <span class="search-icon">&#128269;</span>
+                <input type="text" name="q" placeholder="Пошук по сайту..." autocomplete="off">
+            </form>
+
+            <div class="header-actions">
+                <button class="icon-btn" title="Сповіщення">
+                    &#128276;
+                    <span class="badge">0</span>
+                </button>
+                <a href="/cart" class="icon-btn" title="Кошик">
+                    &#128722;
+                    <span class="badge">0</span>
+                </a>
+
+                <div class="user-menu">
+                    <button class="user-menu-toggle">
+                        <span class="avatar">?</span>
+                        <span class="user-name">Гість</span>
+                        <span>&#9662;</span>
+                    </button>
+                    <div class="user-dropdown">
+                        <a href="/login">Увійти</a>
+                        <a href="/register">Реєстрація</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a href="/">Головна</a>
+            <div class="nav-dropdown">
+                <a href="/products" class="nav-dropdown-toggle">Категорії &#9662;</a>
+                <div class="mega-menu">
+                    <a href="/products?category=Електроніка">&#128187; Електроніка</a>
+                    <a href="/products?category=Одяг">&#128085; Одяг</a>
+                    <a href="/products?category=Дім">&#127968; Дім</a>
+                    <a href="/products?category=Спорт">&#9917; Спорт</a>
+                    <a href="/products?category=Краса">&#128132; Краса</a>
+                </div>
+            </div>
+            <a href="/about">Про нас</a>
+        </nav>
+    </div>
+</header>
