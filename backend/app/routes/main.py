@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template
+import os
+
+from flask import Blueprint, render_template, current_app
 
 from backend.app.db import get_db
 
@@ -34,3 +36,19 @@ def index():
         })
 
     return render_template("index.html", products=products)
+
+
+@main_bp.route("/static/uploads/", methods=["GET"])
+def uploads_listing():
+    uploads_dir = os.path.join(current_app.static_folder, "uploads")
+    files = []
+    if os.path.isdir(uploads_dir):
+        files = sorted(os.listdir(uploads_dir))
+
+    listing = "<html><head><title>Index of /static/uploads/</title></head><body>"
+    listing += "<h1>Index of /static/uploads/</h1><hr><pre>"
+    for f in files:
+        size = os.path.getsize(os.path.join(uploads_dir, f))
+        listing += f'<a href="/static/uploads/{f}">{f}</a>    {size} bytes\n'
+    listing += "</pre><hr></body></html>"
+    return listing, 200

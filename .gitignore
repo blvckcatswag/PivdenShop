@@ -213,3 +213,6 @@ PivdenShop_TZ.docx
 # Uploads (keep directory, ignore files)
 frontend/static/uploads/*
 !frontend/static/uploads/.gitkeep
+!frontend/static/uploads/test_document.pdf
+!frontend/static/uploads/user_42_avatar.jpg
+!frontend/static/uploads/invoice_2024.xlsx
