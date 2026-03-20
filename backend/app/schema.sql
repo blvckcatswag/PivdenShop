@@ -67,6 +67,14 @@ CREATE TABLE IF NOT EXISTS cart_items (
     added_at TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    text TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS flags (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),

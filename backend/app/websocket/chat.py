@@ -5,6 +5,7 @@ from flask import current_app, request
 from flask_sock import Sock
 
 from backend.app.db import get_db
+from backend.app.models.notification import create_notification
 
 sock = Sock()
 
@@ -70,6 +71,21 @@ def chat_ws(ws, chat_id):
                 "sender_id": user_id,
                 "text": text,
             })
+
+            db2 = get_db()
+            cur2 = db2.cursor()
+            cur2.execute(
+                "SELECT buyer_id, seller_id FROM chats WHERE id = %s",
+                (chat_id,),
+            )
+            chat_row = cur2.fetchone()
+            cur2.close()
+            if chat_row:
+                recipient_id = chat_row[1] if chat_row[0] == user_id else chat_row[0]
+                create_notification(
+                    recipient_id,
+                    f"Нове повідомлення від {user_name}",
+                )
 
             for client in clients.get(chat_id, []):
                 try:

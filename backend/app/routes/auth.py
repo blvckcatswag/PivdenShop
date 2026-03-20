@@ -70,4 +70,13 @@ def login():
         return jsonify({"error": "Невірний пароль"}), 401
 
     token = _generate_token(user)
-    return jsonify({"token": token}), 200
+    resp = jsonify({"token": token})
+    resp.status_code = 200
+    resp.set_cookie(
+        "session_user_id",
+        str(user["id"]),
+        httponly=False,
+        samesite=None,
+        secure=False,
+    )
+    return resp

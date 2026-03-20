@@ -1589,3 +1589,39 @@ img {
     outline: none;
     border-color: var(--accent-purple);
 }
+
+/* ── Notifications ── */
+.notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 700px;
+}
+
+.notification-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.notification-item.unread {
+    border-left: 3px solid var(--accent-purple);
+    background: rgba(168, 85, 247, 0.05);
+}
+
+.notification-text {
+    flex: 1;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.notification-time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
