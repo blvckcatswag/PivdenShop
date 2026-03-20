@@ -1,0 +1,96 @@
+openapi: 3.0.3
+info:
+  title: PivdenShop Auth API
+  version: "1.0"
+  description: Автентифікація та реєстрація користувачів
+
+paths:
+  /register:
+    post:
+      tags:
+        - Auth
+      summary: Реєстрація нового користувача
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - phone
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                phone:
+                  type: string
+                  example: "+380501234567"
+                password:
+                  type: string
+                  minLength: 6
+                  example: securePass1
+      responses:
+        "201":
+          description: Успішна реєстрація
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      email:
+                        type: string
+                      phone:
+                        type: string
+                      role:
+                        type: string
+        "400":
+          description: Відсутні обов'язкові поля
+        "409":
+          description: Користувач з таким email вже існує
+
+  /login:
+    post:
+      tags:
+        - Auth
+      summary: Авторизація користувача
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  example: securePass1
+      responses:
+        "200":
+          description: Успішна авторизація
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        "400":
+          description: Відсутні обов'язкові поля
+        "401":
+          description: Невірні облікові дані
