@@ -1,0 +1,26 @@
+{% autoescape false %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Пошук — PivdenShop</title>
+</head>
+<body>
+    <h1>Результати пошуку</h1>
+    <p>Ви шукали: {{ search }}</p>
+
+    {% if products %}
+    <div class="products">
+        {% for product in products %}
+        <div class="product-card">
+            <h3>{{ product.title }}</h3>
+            <p>{{ product.price }} грн</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>Нічого не знайдено за запитом "{{ search }}"</p>
+    {% endif %}
+</body>
+</html>
+{% endautoescape %}
