@@ -37,13 +37,13 @@ def app(_create_test_db):
 
 
 @pytest.fixture(autouse=True)
-def _clean_users(app):
+def _clean_tables(app):
     yield
     db_url = os.environ["DATABASE_URL"]
     conn = psycopg2.connect(db_url)
     conn.autocommit = True
     cur = conn.cursor()
-    cur.execute("DELETE FROM users")
+    cur.execute("TRUNCATE flags, messages, chats, reviews, orders, products, users RESTART IDENTITY CASCADE")
     cur.close()
     conn.close()
 
