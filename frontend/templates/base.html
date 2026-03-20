@@ -23,28 +23,55 @@
     </footer>
 
     <div class="modal-overlay" id="product-modal" onclick="if(event.target===this)closeModal()">
-        <div class="modal">
+        <div class="modal modal-product">
             <button class="modal-close" onclick="closeModal()">&times;</button>
-            <div class="modal-image">📦</div>
-            <div class="modal-body">
-                <h2 id="modal-title"></h2>
-                <div class="price" id="modal-price"></div>
-                <p class="description" id="modal-description"></p>
-                <div class="seller-info">
-                    <div class="seller-avatar">S</div>
-                    <div>
-                        <div style="font-weight:600" id="modal-seller"></div>
-                        <div style="font-size:0.8rem;color:var(--text-secondary)">Продавець</div>
+            <div class="modal-top">
+                <div class="modal-image">
+                    <div class="modal-image-placeholder"></div>
+                </div>
+                <div class="modal-info">
+                    <h2 id="modal-title"></h2>
+                    <div class="modal-price" id="modal-price"></div>
+                    <div class="modal-category" id="modal-category"></div>
+                    <p class="modal-description" id="modal-description"></p>
+
+                    <div class="seller-info">
+                        <div class="seller-avatar" id="modal-seller-avatar">S</div>
+                        <div class="seller-details">
+                            <div class="seller-name" id="modal-seller-name"></div>
+                            <div class="seller-meta">
+                                <span id="modal-seller-rating"></span>
+                                <span id="modal-seller-sales"></span>
+                            </div>
+                            <div class="seller-since" id="modal-seller-since"></div>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-reviews">
-                    <h3>Відгуки</h3>
-                    <div id="modal-reviews"></div>
+            </div>
+
+            <div class="modal-reviews-section">
+                <h3 id="modal-reviews-title">Відгуки</h3>
+                <div id="modal-reviews"></div>
+            </div>
+
+            <div class="modal-review-form">
+                <h4>Ваш відгук</h4>
+                <div class="review-form-body" id="review-form-body">
+                    <div class="star-rating" id="star-rating">
+                        <span data-rating="1">&#9733;</span>
+                        <span data-rating="2">&#9733;</span>
+                        <span data-rating="3">&#9733;</span>
+                        <span data-rating="4">&#9733;</span>
+                        <span data-rating="5" class="active">&#9733;</span>
+                    </div>
+                    <textarea id="review-text" placeholder="Напишіть відгук..." rows="3"></textarea>
+                    <button class="btn btn-gradient btn-sm" id="submit-review">Надіслати відгук</button>
                 </div>
-                <div style="margin-top:20px;display:flex;gap:12px">
-                    <button class="btn btn-gradient" onclick="alert('Додано в кошик!')">Додати в кошик</button>
-                    <button class="btn btn-outline" onclick="closeModal()">Закрити</button>
-                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="alert('Чат буде доступний пізніше')">Написати продавцю</button>
+                <button class="btn btn-gradient" id="modal-add-cart">Додати в кошик</button>
             </div>
         </div>
     </div>

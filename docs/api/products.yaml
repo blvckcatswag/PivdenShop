@@ -1,0 +1,175 @@
+openapi: 3.0.3
+info:
+  title: PivdenShop Products API
+  version: "1.0"
+  description: Каталог товарів, деталі товару, відгуки
+
+paths:
+  /products:
+    get:
+      tags:
+        - Products
+      summary: Каталог товарів (HTML або JSON)
+      description: |
+        Повертає HTML-сторінку каталогу або JSON-список товарів.
+        Для JSON відповіді передайте заголовок Accept: application/json.
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Пошук за назвою товару
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Фільтр за категорією
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Номер сторінки
+      responses:
+        "200":
+          description: Список товарів
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        seller_id:
+                          type: integer
+                        title:
+                          type: string
+                        description:
+                          type: string
+                        price:
+                          type: number
+                        category:
+                          type: string
+                        image_url:
+                          type: string
+                        created_at:
+                          type: string
+                          format: date-time
+
+  /api/products/{product_id}:
+    get:
+      tags:
+        - Products
+      summary: Деталі товару
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Інформація про товар
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  product:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      title:
+                        type: string
+                      description:
+                        type: string
+                      price:
+                        type: number
+                      image_url:
+                        type: string
+                      category:
+                        type: string
+                      seller:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          name:
+                            type: string
+                          rating:
+                            type: number
+                          sales_count:
+                            type: integer
+                          member_since:
+                            type: string
+                      reviews:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            author:
+                              type: string
+                            text:
+                              type: string
+                            rating:
+                              type: integer
+        "404":
+          description: Товар не знайдено
+
+  /api/products/{product_id}/reviews:
+    post:
+      tags:
+        - Products
+      summary: Додати відгук до товару
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                  description: Текст відгуку
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  default: 5
+      responses:
+        "201":
+          description: Відгук додано
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+        "401":
+          description: Потрібна авторизація
+        "404":
+          description: Товар не знайдено
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
