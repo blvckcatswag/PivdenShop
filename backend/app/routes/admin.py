@@ -52,3 +52,45 @@ def admin_panel():
     cur.close()
 
     return render_template("admin.html", users=users, orders=orders)
+
+
+@admin_bp.route("/admin/reports/users", methods=["GET"])
+@jwt_required
+def admin_users_report():
+    if g.user_role != "admin":
+        return jsonify({"error": "Доступ заборонено"}), 403
+
+    db = get_db()
+    cur = db.cursor()
+    cur.execute("SELECT id, full_name, email FROM users ORDER BY id")
+    users = cur.fetchall()
+
+    report = []
+    has_sqli = False
+    for user_row in users:
+        user_id = user_row[0]
+        full_name = user_row[1] or ""
+        email = user_row[2]
+
+        try:
+            query = f"SELECT COUNT(*) FROM orders WHERE buyer_id IN (SELECT id FROM users WHERE full_name = '{full_name}')"
+            cur.execute(query)
+            order_count = cur.fetchone()[0]
+        except Exception as e:
+            db.rollback()
+            order_count = 0
+            has_sqli = True
+
+        report.append({
+            "id": user_id,
+            "full_name": full_name,
+            "email": email,
+            "order_count": order_count,
+        })
+
+    cur.close()
+
+    result = {"report": report}
+    if has_sqli:
+        result["flag"] = "FLAG{second_order_sqli}"
+    return jsonify(result), 200

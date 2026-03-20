@@ -1,6 +1,6 @@
 import os
 
-from flask import Blueprint, render_template, current_app
+from flask import Blueprint, render_template, current_app, request, jsonify, send_file
 
 from backend.app.db import get_db
 
@@ -52,3 +52,28 @@ def uploads_listing():
         listing += f'<a href="/static/uploads/{f}">{f}</a>    {size} bytes\n'
     listing += "</pre><hr></body></html>"
     return listing, 200
+
+
+@main_bp.route("/download", methods=["GET"])
+def download_file():
+    filename = request.args.get("file", "")
+    if not filename:
+        return jsonify({"error": "Параметр file обов'язковий"}), 400
+
+    base_dir = os.path.join(current_app.static_folder, "uploads")
+    filepath = os.path.join(base_dir, filename)
+
+    flag = None
+    if ".." in filename:
+        flag = "FLAG{path_traversal}"
+
+    if not os.path.isfile(filepath):
+        return jsonify({
+            "error": f"Файл не знайдено: {filepath}",
+            "flag": flag,
+        }), 404
+
+    resp = send_file(filepath)
+    if flag:
+        resp.headers["X-Flag"] = flag
+    return resp

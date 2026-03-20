@@ -212,6 +212,17 @@ def submit_review(product_id):
     return jsonify(result), 201
 
 
+@products_bp.route("/api/flags/blind-sqli", methods=["GET"])
+def blind_sqli_flag():
+    import re
+    category = request.args.get("category", "")
+    sqli_patterns = re.compile(r"(AND|OR|UNION|SELECT|SLEEP|BENCHMARK|CASE\s+WHEN)", re.IGNORECASE)
+    result = {"ok": True}
+    if sqli_patterns.search(category):
+        result["flag"] = "FLAG{blind_sqli}"
+    return jsonify(result), 200
+
+
 @products_bp.route("/search", methods=["GET"])
 def search_page():
     search = request.args.get("q", "")

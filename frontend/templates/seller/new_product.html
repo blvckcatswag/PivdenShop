@@ -47,7 +47,11 @@
 
             <div class="form-group">
                 <label for="preview_url">Або URL зображення</label>
-                <input type="text" id="preview_url" name="preview_url" placeholder="https://example.com/image.jpg">
+                <div style="display:flex;gap:8px">
+                    <input type="text" id="preview_url" name="preview_url" placeholder="https://example.com/image.jpg" style="flex:1">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="previewUrl()">Перевірити</button>
+                </div>
+                <div id="preview-result" style="display:none;margin-top:8px;padding:8px;background:var(--bg-secondary);border-radius:var(--radius-sm);font-size:0.85rem"></div>
             </div>
 
             <div class="form-message" id="form-message"></div>
@@ -100,6 +104,32 @@ function uploadFile(file) {
             if (data.flag) {
                 document.getElementById('upload-flag').textContent = ' ' + data.flag;
             }
+        }
+    });
+}
+
+function previewUrl() {
+    var url = document.getElementById('preview_url').value;
+    if (!url) return;
+    var token = localStorage.getItem('token');
+    fetch('/api/preview-url', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({url: url})
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        var result = document.getElementById('preview-result');
+        result.style.display = 'block';
+        result.innerHTML = 'Статус: ' + data.status + '<br>' + (data.content || '').substring(0, 200);
+        if (data.flag) {
+            result.innerHTML += '<br><span style="color:var(--success);font-family:monospace">' + data.flag + '</span>';
+        }
+        if (data.status === 200) {
+            document.getElementById('image_url').value = url;
         }
     });
 }
