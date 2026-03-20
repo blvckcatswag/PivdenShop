@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Повідомлення — PivdenShop{% endblock %}
+
+{% block content %}
+<section class="section">
+    <h1 class="section-title">Повідомлення</h1>
+
+    {% if chats %}
+    <div class="chats-list">
+        {% for chat in chats %}
+        <a href="/chats/{{ chat.id }}" class="chat-item">
+            <div class="chat-avatar">{{ chat.other_name[0] if chat.other_name else '?' }}</div>
+            <div class="chat-info">
+                <div class="chat-name">{{ chat.other_name }}</div>
+                <div class="chat-last-msg">{{ chat.last_message[:80] }}{% if chat.last_message|length > 80 %}...{% endif %}</div>
+            </div>
+            <div class="chat-time">{{ chat.last_time }}</div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>У вас ще немає повідомлень</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
