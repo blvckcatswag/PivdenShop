@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Сповіщення — PivdenShop{% endblock %}
+
+{% block content %}
+<section class="section">
+    <h1 class="section-title">Сповіщення</h1>
+
+    <div class="notifications-list" id="notifications-list">
+    </div>
+
+    {% if not notifications %}
+    <div class="empty-state">
+        <p>У вас немає сповіщень</p>
+    </div>
+    {% endif %}
+</section>
+
+<script>
+var token = localStorage.getItem('token');
+fetch('/api/notifications', {
+    headers: {'Authorization': 'Bearer ' + token}
+})
+.then(function(r) { return r.json(); })
+.then(function(data) {
+    var list = document.getElementById('notifications-list');
+    if (data.notifications && data.notifications.length) {
+        data.notifications.forEach(function(n) {
+            list.innerHTML += '<div class="notification-item' + (n.is_read ? '' : ' unread') + '">' +
+                '<div class="notification-text">' + n.text + '</div>' +
+                '<div class="notification-time">' + (n.created_at || '') + '</div>' +
+                '</div>';
+        });
+    }
+});
+</script>
+{% endblock %}

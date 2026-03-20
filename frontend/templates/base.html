@@ -77,5 +77,27 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+    (function() {
+        var token = localStorage.getItem('token');
+        if (!token) return;
+        function updateNotifCount() {
+            fetch('/api/notifications/count', {
+                headers: {'Authorization': 'Bearer ' + token}
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var badge = document.getElementById('notif-badge');
+                if (badge && data.count !== undefined) {
+                    badge.textContent = data.count;
+                    badge.style.display = data.count > 0 ? 'inline-block' : 'none';
+                }
+            })
+            .catch(function() {});
+        }
+        updateNotifCount();
+        setInterval(updateNotifCount, 30000);
+    })();
+    </script>
 </body>
 </html>
