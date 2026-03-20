@@ -5,7 +5,10 @@ from backend.app.db import close_db, init_db
 
 
 def create_app(testing=False):
-    app = Flask(__name__)
+    import os
+    template_dir = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "templates")
+    static_dir = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "static")
+    app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
     app.config.from_object(Config)
 
     if testing:

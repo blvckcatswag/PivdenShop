@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 
 from backend.app.db import get_db
 
@@ -35,3 +35,25 @@ def search_products():
         })
 
     return jsonify({"products": products}), 200
+
+
+@products_bp.route("/search", methods=["GET"])
+def search_page():
+    search = request.args.get("q", "")
+
+    products = []
+    if search:
+        db = get_db()
+        cur = db.cursor()
+        query = f"SELECT id, title, price FROM products WHERE title ILIKE '%{search}%'"
+        try:
+            cur.execute(query)
+            rows = cur.fetchall()
+            for row in rows:
+                products.append({"id": row[0], "title": row[1], "price": float(row[2])})
+        except Exception:
+            pass
+        finally:
+            cur.close()
+
+    return render_template("search.html", search=search, products=products)
