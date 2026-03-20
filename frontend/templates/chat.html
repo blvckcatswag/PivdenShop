@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Чат з {{ other_name }} — PivdenShop{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="chat-container">
+        <div class="chat-header">
+            <a href="/chats" class="chat-back">&larr;</a>
+            <div class="chat-header-name">{{ other_name }}</div>
+            <div class="chat-status">онлайн</div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+        </div>
+
+        <div class="chat-input">
+            <input type="text" id="msg-input" placeholder="Напишіть повідомлення..." autocomplete="off">
+            <button class="btn btn-gradient btn-sm" id="send-btn">&rarr;</button>
+        </div>
+    </div>
+</section>
+
+<script>
+var chatId = {{ chat_id }};
+var token = localStorage.getItem('token');
+var chatBox = document.getElementById('chat-messages');
+var msgInput = document.getElementById('msg-input');
+
+fetch('/api/chats/' + chatId + '/messages', {
+    headers: {'Authorization': 'Bearer ' + token}
+})
+.then(function(r) { return r.json(); })
+.then(function(data) {
+    data.messages.forEach(function(msg) {
+        appendMessage(msg.sender_name, msg.text, msg.sender_id);
+    });
+    chatBox.scrollTop = chatBox.scrollHeight;
+});
+
+var wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+var ws = new WebSocket(wsProtocol + '//' + location.host + '/ws/chats/' + chatId + '?token=' + token);
+
+ws.onmessage = function(e) {
+    var msg = JSON.parse(e.data);
+    appendMessage(msg.sender, msg.text, msg.sender_id);
+    chatBox.scrollTop = chatBox.scrollHeight;
+};
+
+function appendMessage(sender, text, senderId) {
+    chatBox.innerHTML +=
+        '<div class="msg">' +
+        '<span class="msg-sender">' + sender + '</span>' +
+        '<span class="msg-text">' + text + '</span>' +
+        '</div>';
+}
+
+document.getElementById('send-btn').addEventListener('click', sendMessage);
+msgInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') sendMessage();
+});
+
+function sendMessage() {
+    var text = msgInput.value.trim();
+    if (!text || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({text: text}));
+    msgInput.value = '';
+}
+</script>
+{% endblock %}
