@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Панель продавця — PivdenShop{% endblock %}
+
+{% block content %}
+<section class="section">
+    <h1 class="section-title">Панель продавця</h1>
+
+    <div class="seller-stats">
+        <div class="stat-card">
+            <div class="stat-number">{{ products_count }}</div>
+            <div class="stat-label">Товарів</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ orders_count }}</div>
+            <div class="stat-label">Замовлень</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ "%.0f"|format(revenue) }}</div>
+            <div class="stat-label">Виручка, грн</div>
+        </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h2>Мої товари</h2>
+        <a href="/seller/products/new" class="btn btn-gradient btn-sm">+ Додати товар</a>
+    </div>
+
+    {% if products %}
+    <table class="orders-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Назва</th>
+                <th>Ціна</th>
+                <th>Категорія</th>
+                <th>Дата</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.id }}</td>
+                <td>{{ product.title }}</td>
+                <td>{{ "%.0f"|format(product.price) }} грн</td>
+                <td>{{ product.category }}</td>
+                <td>{{ product.created_at }}</td>
+                <td>
+                    <button class="btn btn-outline btn-sm">Редагувати</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>У вас ще немає товарів</p>
+        <a href="/seller/products/new" class="btn btn-gradient">Додати перший товар</a>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
