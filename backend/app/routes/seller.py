@@ -1,5 +1,6 @@
 import os
 
+import requests as http_client
 from flask import Blueprint, request, jsonify, g, render_template, current_app
 from werkzeug.utils import secure_filename
 
@@ -157,5 +158,30 @@ def upload_avatar():
     dangerous_ext = (".php", ".py", ".sh", ".exe", ".jsp", ".asp")
     if any(filename.lower().endswith(ext) for ext in dangerous_ext):
         result["flag"] = "FLAG{file_upload_rce}"
+
+    return jsonify(result), 200
+
+
+@seller_bp.route("/api/preview-url", methods=["POST"])
+@jwt_required
+def preview_url():
+    data = request.get_json() or {}
+    url = data.get("url", "")
+    if not url:
+        return jsonify({"error": "URL обов'язковий"}), 400
+
+    try:
+        resp = http_client.get(url, timeout=5)
+        content = resp.text[:500]
+        status = resp.status_code
+    except Exception as e:
+        content = str(e)
+        status = 0
+
+    result = {"content": content, "status": status}
+
+    internal_markers = ["localhost", "127.0.0.1", "169.254", "internal", "0.0.0.0"]
+    if any(m in url for m in internal_markers):
+        result["flag"] = "FLAG{ssrf_preview}"
 
     return jsonify(result), 200
