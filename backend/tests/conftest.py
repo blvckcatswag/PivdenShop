@@ -36,30 +36,8 @@ def app(_create_test_db):
     yield app
 
 
-@pytest.fixture(scope="session")
-def _init_schema(app):
-    db_url = os.environ["DATABASE_URL"]
-    conn = psycopg2.connect(db_url)
-    conn.autocommit = True
-    cur = conn.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            email VARCHAR(255) UNIQUE NOT NULL,
-            phone VARCHAR(20) NOT NULL,
-            password_hash VARCHAR(255) NOT NULL,
-            name VARCHAR(100) DEFAULT '',
-            role VARCHAR(20) DEFAULT 'buyer',
-            is_verified BOOLEAN DEFAULT FALSE,
-            created_at TIMESTAMP DEFAULT NOW()
-        )
-    """)
-    cur.close()
-    conn.close()
-
-
 @pytest.fixture(autouse=True)
-def _clean_users(_init_schema):
+def _clean_users(app):
     yield
     db_url = os.environ["DATABASE_URL"]
     conn = psycopg2.connect(db_url)
