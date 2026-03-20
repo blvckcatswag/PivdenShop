@@ -58,10 +58,12 @@ def create_app(testing=False):
     from backend.app.routes.products import products_bp
     from backend.app.routes.main import main_bp
     from backend.app.routes.orders import orders_bp
+    from backend.app.routes.admin import admin_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(profile_bp)
     app.register_blueprint(products_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(orders_bp)
+    app.register_blueprint(admin_bp)
 
     return app
