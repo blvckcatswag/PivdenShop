@@ -1,0 +1,41 @@
+<header class="header">
+    <div class="container">
+        <div class="header-top">
+            <a href="/" class="logo">PivdenShop</a>
+
+            <form class="search-form" action="/search" method="GET">
+                <span class="search-icon">&#128269;</span>
+                <input type="text" name="q" placeholder="Пошук по сайту..." autocomplete="off">
+            </form>
+
+            <div class="header-actions">
+                <button class="icon-btn" title="Сповіщення">
+                    &#128276;
+                    <span class="badge">0</span>
+                </button>
+                <a href="/cart" class="icon-btn" title="Кошик">
+                    &#128722;
+                    <span class="badge">0</span>
+                </a>
+
+                <div class="user-menu">
+                    <button class="user-menu-toggle">
+                        <span class="avatar">?</span>
+                        <span class="user-name">Гість</span>
+                        <span>&#9662;</span>
+                    </button>
+                    <div class="user-dropdown">
+                        <a href="/login">Увійти</a>
+                        <a href="/register">Реєстрація</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a href="/">Головна</a>
+            <a href="/products">Каталог</a>
+            <a href="/about">Про нас</a>
+        </nav>
+    </div>
+</header>
