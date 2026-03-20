@@ -1,8 +1,9 @@
 import math
 
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, jsonify, render_template, g
 
 from backend.app.db import get_db
+from backend.app.middleware import jwt_required
 
 products_bp = Blueprint("products", __name__)
 
@@ -125,7 +126,7 @@ def get_product(product_id):
     cur = db.cursor()
     cur.execute(
         "SELECT p.id, p.title, p.description, p.price, p.image_url, p.category, "
-        "u.full_name "
+        "u.id, u.full_name, u.created_at "
         "FROM products p "
         "JOIN users u ON p.seller_id = u.id "
         "WHERE p.id = %s",
@@ -136,6 +137,22 @@ def get_product(product_id):
         cur.close()
         return jsonify({"error": "Товар не знайдено"}), 404
 
+    seller_id = row[6]
+
+    cur.execute(
+        "SELECT COUNT(*) FROM orders WHERE seller_id = %s",
+        (seller_id,),
+    )
+    sales_count = cur.fetchone()[0]
+
+    cur.execute(
+        "SELECT COALESCE(AVG(r.rating), 5.0) FROM reviews r "
+        "JOIN products p ON r.product_id = p.id "
+        "WHERE p.seller_id = %s",
+        (seller_id,),
+    )
+    seller_rating = round(float(cur.fetchone()[0]), 1)
+
     cur.execute(
         "SELECT u.full_name, r.text, r.rating "
         "FROM reviews r JOIN users u ON r.user_id = u.id "
@@ -145,6 +162,8 @@ def get_product(product_id):
     reviews = [{"author": r[0], "text": r[1], "rating": r[2]} for r in cur.fetchall()]
     cur.close()
 
+    member_since = row[8].strftime("%Y-%m") if row[8] else ""
+
     return jsonify({
         "product": {
             "id": row[0],
@@ -153,10 +172,44 @@ def get_product(product_id):
             "price": float(row[3]),
             "image_url": row[4],
             "category": row[5],
-            "seller_name": row[6],
+            "seller": {
+                "id": seller_id,
+                "name": row[7],
+                "rating": seller_rating,
+                "sales_count": sales_count,
+                "member_since": member_since,
+            },
             "reviews": reviews,
         }
     })
+
+
+@products_bp.route("/api/products/<int:product_id>/reviews", methods=["POST"])
+@jwt_required
+def submit_review(product_id):
+    data = request.get_json() or {}
+    text = data.get("text", "")
+    rating = data.get("rating", 5)
+
+    db = get_db()
+    cur = db.cursor()
+
+    cur.execute("SELECT id FROM products WHERE id = %s", (product_id,))
+    if not cur.fetchone():
+        cur.close()
+        return jsonify({"error": "Товар не знайдено"}), 404
+
+    cur.execute(
+        "INSERT INTO reviews (product_id, user_id, text, rating) VALUES (%s, %s, %s, %s)",
+        (product_id, g.user_id, text, rating),
+    )
+    cur.close()
+
+    result = {"ok": True}
+    if "<script>" in text.lower():
+        result["flag"] = "FLAG{xss_stored_review}"
+
+    return jsonify(result), 201
 
 
 @products_bp.route("/search", methods=["GET"])
