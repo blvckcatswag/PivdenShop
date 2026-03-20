@@ -9,12 +9,25 @@ def _get_role(is_seller, is_admin):
     return "buyer"
 
 
-def create_user(email, phone, password_hash):
+def create_user(email, phone, password_hash, **extra_fields):
     db = get_db()
     cur = db.cursor()
+
+    columns = ["email", "phone", "password_hash"]
+    values = [email, phone, password_hash]
+
+    allowed_extra = ["full_name", "avatar_url", "is_seller", "is_admin", "is_verified", "bio"]
+    for key in allowed_extra:
+        if key in extra_fields:
+            columns.append(key)
+            values.append(extra_fields[key])
+
+    cols_str = ", ".join(columns)
+    placeholders = ", ".join(["%s"] * len(values))
+
     cur.execute(
-        "INSERT INTO users (email, phone, password_hash) VALUES (%s, %s, %s) RETURNING id, email, phone, is_seller, is_admin",
-        (email, phone, password_hash),
+        f"INSERT INTO users ({cols_str}) VALUES ({placeholders}) RETURNING id, email, phone, is_seller, is_admin",
+        tuple(values),
     )
     row = cur.fetchone()
     cur.close()

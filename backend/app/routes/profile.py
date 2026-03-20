@@ -12,7 +12,7 @@ def get_profile():
     db = get_db()
     cur = db.cursor()
     cur.execute(
-        "SELECT id, email, phone, full_name, avatar_url, is_seller, is_admin, bio, created_at "
+        "SELECT id, email, phone, full_name, avatar_url, is_seller, is_admin, bio, created_at, is_verified "
         "FROM users WHERE id = %s",
         (g.user_id,),
     )
@@ -54,6 +54,7 @@ def get_profile():
         "is_admin": row[6],
         "bio": row[7],
         "created_at": row[8].strftime("%d.%m.%Y") if row[8] else "",
+        "is_verified": row[9],
     }
 
     if request.headers.get("Accept", "").startswith("application/json"):

@@ -60,6 +60,7 @@ def create_app(testing=False):
     from backend.app.routes.orders import orders_bp
     from backend.app.routes.admin import admin_bp
     from backend.app.routes.cart import cart_bp
+    from backend.app.routes.seller import seller_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(profile_bp)
     app.register_blueprint(products_bp)
@@ -67,5 +68,6 @@ def create_app(testing=False):
     app.register_blueprint(orders_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(cart_bp)
+    app.register_blueprint(seller_bp)
 
     return app

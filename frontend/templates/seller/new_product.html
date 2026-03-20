@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Додати товар — PivdenShop{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="auth-card" style="max-width:600px">
+        <h1 class="auth-title">Додати товар</h1>
+        <form id="new-product-form" class="auth-form" novalidate>
+            <div class="form-group">
+                <label for="title">Назва товару</label>
+                <input type="text" id="title" name="title" placeholder="Назва товару" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Опис</label>
+                <textarea id="description" name="description" rows="4" placeholder="Детальний опис товару..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="price">Ціна (грн)</label>
+                <input type="number" id="price" name="price" placeholder="999" required>
+            </div>
+            <div class="form-group">
+                <label for="category">Категорія</label>
+                <select id="category" name="category">
+                    <option value="Електроніка">Електроніка</option>
+                    <option value="Одяг">Одяг</option>
+                    <option value="Дім">Дім</option>
+                    <option value="Спорт">Спорт</option>
+                    <option value="Краса">Краса</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Фото товару</label>
+                <div class="upload-zone" id="upload-zone">
+                    <div class="upload-icon">&#128247;</div>
+                    <p>Перетягніть файл або натисніть для вибору</p>
+                    <p style="font-size:0.75rem;color:var(--text-secondary)">Будь-який формат</p>
+                    <input type="file" id="file-input" style="display:none">
+                </div>
+                <div class="upload-result" id="upload-result" style="display:none">
+                    <span id="uploaded-name"></span>
+                    <span id="upload-flag" style="color:var(--success);font-family:monospace"></span>
+                </div>
+                <input type="hidden" id="image_url" name="image_url">
+            </div>
+
+            <div class="form-group">
+                <label for="preview_url">Або URL зображення</label>
+                <input type="text" id="preview_url" name="preview_url" placeholder="https://example.com/image.jpg">
+            </div>
+
+            <div class="form-message" id="form-message"></div>
+            <button type="submit" class="btn-gradient">Додати товар</button>
+        </form>
+    </div>
+</section>
+
+<script>
+var uploadZone = document.getElementById('upload-zone');
+var fileInput = document.getElementById('file-input');
+
+uploadZone.addEventListener('click', function() { fileInput.click(); });
+
+uploadZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    uploadZone.style.borderColor = 'var(--accent-purple)';
+});
+
+uploadZone.addEventListener('dragleave', function() {
+    uploadZone.style.borderColor = 'var(--border)';
+});
+
+uploadZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    uploadZone.style.borderColor = 'var(--border)';
+    if (e.dataTransfer.files.length) uploadFile(e.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener('change', function() {
+    if (this.files.length) uploadFile(this.files[0]);
+});
+
+function uploadFile(file) {
+    var token = localStorage.getItem('token');
+    var formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/api/upload/avatar', {
+        method: 'POST',
+        headers: {'Authorization': 'Bearer ' + token},
+        body: formData
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.url) {
+            document.getElementById('image_url').value = data.url;
+            document.getElementById('upload-result').style.display = 'flex';
+            document.getElementById('uploaded-name').textContent = file.name + ' — завантажено';
+            if (data.flag) {
+                document.getElementById('upload-flag').textContent = ' ' + data.flag;
+            }
+        }
+    });
+}
+
+document.getElementById('new-product-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var msg = document.getElementById('form-message');
+    msg.textContent = '';
+
+    var token = localStorage.getItem('token');
+    var imageUrl = document.getElementById('image_url').value || document.getElementById('preview_url').value;
+
+    var resp = await fetch('/api/products', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({
+            title: document.getElementById('title').value,
+            description: document.getElementById('description').value,
+            price: parseFloat(document.getElementById('price').value),
+            category: document.getElementById('category').value,
+            image_url: imageUrl
+        })
+    });
+    var data = await resp.json();
+    if (data.ok) {
+        msg.style.color = 'var(--success)';
+        msg.textContent = 'Товар додано!';
+        setTimeout(function() { window.location.href = '/seller/dashboard'; }, 1000);
+    } else {
+        msg.textContent = data.error || 'Помилка';
+    }
+});
+</script>
+{% endblock %}

@@ -41,7 +41,8 @@ def register():
         return jsonify({"error": "Користувач з таким email вже існує"}), 409
 
     password_hash = _hash_password(password)
-    user = create_user(email, phone, password_hash)
+    extra = {k: v for k, v in data.items() if k not in ("email", "phone", "password")}
+    user = create_user(email, phone, password_hash, **extra)
     token = _generate_token(user)
 
     return jsonify({"token": token, "user": user}), 201
