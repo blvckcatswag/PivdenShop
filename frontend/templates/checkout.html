@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Оформлення замовлення — PivdenShop{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="auth-card" style="max-width:600px">
+        <h1 class="auth-title">Оформлення замовлення</h1>
+
+        <div class="checkout-steps">
+            <div class="step active" id="step-indicator-1">1. Адреса</div>
+            <div class="step" id="step-indicator-2">2. Оплата</div>
+            <div class="step" id="step-indicator-3">3. Підтвердження</div>
+        </div>
+
+        <div class="checkout-step active" id="step-1">
+            <h3>Адреса доставки</h3>
+            <div class="form-group">
+                <label for="address">Адреса</label>
+                <textarea id="address" rows="3" placeholder="Місто, вулиця, будинок, квартира..."></textarea>
+            </div>
+            <button class="btn btn-gradient" onclick="goToStep(2)">Далі</button>
+        </div>
+
+        <div class="checkout-step" id="step-2">
+            <h3>Платіжна картка</h3>
+            <div class="card-options">
+                <label class="card-option">
+                    <input type="radio" name="card" value="4242" checked>
+                    <span class="card-display">**** **** **** 4242</span>
+                </label>
+                <label class="card-option">
+                    <input type="radio" name="card" value="4444">
+                    <span class="card-display">**** **** **** 4444</span>
+                </label>
+                <label class="card-option">
+                    <input type="radio" name="card" value="new">
+                    <span class="card-display">Інша картка</span>
+                </label>
+            </div>
+            <div id="new-card-fields" style="display:none;margin-top:16px">
+                <div class="form-group">
+                    <label>Номер картки</label>
+                    <input type="text" id="card-number" placeholder="0000 0000 0000 0000" maxlength="19">
+                </div>
+                <div style="display:flex;gap:12px">
+                    <div class="form-group" style="flex:1">
+                        <label>MM/YY</label>
+                        <input type="text" id="card-expiry" placeholder="12/28" maxlength="5">
+                    </div>
+                    <div class="form-group" style="flex:1">
+                        <label>CVV</label>
+                        <input type="text" id="card-cvv" placeholder="123" maxlength="3">
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:16px">
+                <button class="btn btn-outline" onclick="goToStep(1)">Назад</button>
+                <button class="btn btn-gradient" style="flex:1" onclick="goToStep(3)">Далі</button>
+            </div>
+        </div>
+
+        <div class="checkout-step" id="step-3">
+            <h3>Підтвердження</h3>
+            <div class="checkout-summary">
+                {% for item in items %}
+                <div class="checkout-item">
+                    <span>{{ item.title }} × {{ item.quantity }}</span>
+                    <span>{{ "%.0f"|format(item.subtotal) }} грн</span>
+                </div>
+                {% endfor %}
+                <div class="checkout-total">
+                    <span>Разом:</span>
+                    <span id="checkout-total">{{ "%.0f"|format(total) }} грн</span>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:20px">
+                <button class="btn btn-outline" onclick="goToStep(2)">Назад</button>
+                <button class="btn btn-gradient" style="flex:1" id="pay-btn" onclick="submitOrder()">Оплатити</button>
+            </div>
+            <div class="form-message" id="order-message" style="margin-top:12px"></div>
+        </div>
+    </div>
+</section>
+
+<script>
+function goToStep(n) {
+    document.querySelectorAll('.checkout-step').forEach(function(s) { s.classList.remove('active'); });
+    document.querySelectorAll('.checkout-steps .step').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById('step-' + n).classList.add('active');
+    document.getElementById('step-indicator-' + n).classList.add('active');
+}
+
+document.querySelectorAll('input[name="card"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+        document.getElementById('new-card-fields').style.display =
+            this.value === 'new' ? 'block' : 'none';
+    });
+});
+
+function submitOrder() {
+    var token = localStorage.getItem('token');
+    if (!token) {
+        document.getElementById('order-message').textContent = 'Увійдіть для оформлення';
+        return;
+    }
+
+    var address = document.getElementById('address').value;
+    var card = document.querySelector('input[name="card"]:checked').value;
+
+    document.getElementById('pay-btn').disabled = true;
+    document.getElementById('pay-btn').textContent = 'Обробка...';
+
+    fetch('/api/orders/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({address: address, card_last4: card})
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.ok) {
+            var msg = document.getElementById('order-message');
+            msg.style.color = 'var(--success)';
+            msg.textContent = 'Замовлення оформлено! Сума: ' + data.total + ' грн';
+            if (data.flag) {
+                msg.textContent += ' ' + data.flag;
+            }
+        } else {
+            document.getElementById('order-message').textContent = data.error || 'Помилка';
+            document.getElementById('pay-btn').disabled = false;
+            document.getElementById('pay-btn').textContent = 'Оплатити';
+        }
+    });
+}
+</script>
+{% endblock %}

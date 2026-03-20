@@ -43,7 +43,7 @@ def _clean_tables(app):
     conn = psycopg2.connect(db_url)
     conn.autocommit = True
     cur = conn.cursor()
-    cur.execute("TRUNCATE flags, messages, chats, reviews, orders, products, users RESTART IDENTITY CASCADE")
+    cur.execute("TRUNCATE flags, cart_items, messages, chats, reviews, orders, products, users RESTART IDENTITY CASCADE")
     cur.close()
     conn.close()
 
