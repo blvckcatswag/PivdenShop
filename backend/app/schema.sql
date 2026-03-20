@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     is_seller BOOLEAN DEFAULT FALSE,
     is_admin BOOLEAN DEFAULT FALSE,
     is_verified BOOLEAN DEFAULT FALSE,
+    bio TEXT DEFAULT '',
     created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -65,3 +66,8 @@ CREATE TABLE IF NOT EXISTS flags (
     flag_value VARCHAR(100) NOT NULL,
     found_at TIMESTAMP DEFAULT NOW()
 );
+
+DO $$ BEGIN
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT DEFAULT '';
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;

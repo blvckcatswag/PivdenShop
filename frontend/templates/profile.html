@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Особистий кабінет — PivdenShop{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            {% if user.avatar_url %}
+            <img src="{{ user.avatar_url }}" alt="Avatar">
+            {% else %}
+            {{ user.full_name[0] if user.full_name else user.email[0] }}
+            {% endif %}
+        </div>
+        <div class="profile-info">
+            <h1>{{ user.full_name or user.email }}</h1>
+            <p class="profile-email">{{ user.email }}</p>
+            <p class="profile-since">На платформі з {{ user.created_at }}</p>
+        </div>
+        <a href="/profile/edit" class="btn btn-outline">Редагувати</a>
+    </div>
+
+    <div class="profile-tabs">
+        <button class="tab-btn active" data-tab="orders">Замовлення</button>
+        <button class="tab-btn" data-tab="personal">Особисті дані</button>
+        <button class="tab-btn" data-tab="flags">&#127988; Знахідки</button>
+    </div>
+
+    <div class="tab-content active" id="tab-orders">
+        {% if orders %}
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Товар</th>
+                    <th>Сума</th>
+                    <th>Статус</th>
+                    <th>Дата</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr onclick="window.location='/orders/{{ order.id }}'">
+                    <td>{{ order.id }}</td>
+                    <td>{{ order.product_title }}</td>
+                    <td>{{ "%.0f"|format(order.price) }} грн</td>
+                    <td><span class="status-badge status-{{ order.status }}">{{ order.status }}</span></td>
+                    <td>{{ order.created_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-state">У вас ще немає замовлень</p>
+        {% endif %}
+    </div>
+
+    <div class="tab-content" id="tab-personal">
+        <div class="personal-grid">
+            <div class="personal-item">
+                <span class="personal-label">Email</span>
+                <span>{{ user.email }}</span>
+            </div>
+            <div class="personal-item">
+                <span class="personal-label">Телефон</span>
+                <span>{{ user.phone }}</span>
+            </div>
+            <div class="personal-item">
+                <span class="personal-label">Повне ім'я</span>
+                <span>{{ user.full_name or '—' }}</span>
+            </div>
+            <div class="personal-item">
+                <span class="personal-label">Про себе</span>
+                <span>{{ user.bio or '—' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="tab-flags">
+        <div class="flags-dashboard">
+            <div class="flags-counter">
+                <div class="flags-number">{{ flags_found }}</div>
+                <div class="flags-label">з {{ flags_total }} знайдено</div>
+            </div>
+            <div class="flags-progress">
+                <div class="flags-bar" style="width: {{ (flags_found / flags_total * 100)|int }}%"></div>
+            </div>
+            <p class="flags-hint">Досліджуйте сайт, щоб знайти вразливості та зібрати всі флаги!</p>
+        </div>
+    </div>
+</section>
+
+<script>
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+});
+</script>
+{% endblock %}

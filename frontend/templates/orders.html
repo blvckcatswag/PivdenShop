@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Мої замовлення — PivdenShop{% endblock %}
+
+{% block content %}
+<section class="section">
+    <h1 class="section-title">Мої замовлення</h1>
+
+    {% if orders %}
+    <table class="orders-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Товар</th>
+                <th>Сума</th>
+                <th>Статус</th>
+                <th>Дата</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td>{{ order.product_title }}</td>
+                <td>{{ "%.0f"|format(order.price) }} грн</td>
+                <td><span class="status-badge status-{{ order.status }}">{{ order.status }}</span></td>
+                <td>{{ order.created_at[:10] if order.created_at else '' }}</td>
+                <td><a href="/orders/{{ order.id }}" class="btn btn-outline btn-sm">Деталі</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>У вас ще немає замовлень</p>
+        <a href="/products" class="btn btn-gradient">Перейти до каталогу</a>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
