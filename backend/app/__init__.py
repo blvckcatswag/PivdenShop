@@ -36,8 +36,12 @@ def create_app(testing=False):
     with app.app_context():
         init_db(app)
         if not testing:
-            from backend.seed import run_seed
-            run_seed()
+            try:
+                from backend.seed import run_seed
+                run_seed()
+                print("[SEED] Seed completed")
+            except Exception as e:
+                print(f"[SEED] WARNING: Seed failed: {e}")
 
     specs_dir = os.path.join(os.path.dirname(__file__), "..", "..", "docs", "api")
     app.config["SWAGGER"] = {
