@@ -1,3 +1,5 @@
+import time
+
 from flask import Blueprint, request, jsonify, g, render_template
 
 from backend.app.middleware import jwt_required
@@ -53,6 +55,8 @@ def create_order():
     if not items:
         return jsonify({"error": "Кошик порожній"}), 400
 
+    time.sleep(0.1)
+
     db = get_db()
     cur = db.cursor()
 
@@ -74,6 +78,14 @@ def create_order():
     cur.close()
     clear_cart(g.user_id)
 
+    cur2 = db.cursor()
+    cur2.execute(
+        "SELECT COUNT(*) FROM orders WHERE buyer_id = %s AND created_at > NOW() - INTERVAL '5 seconds'",
+        (g.user_id,),
+    )
+    recent_count = cur2.fetchone()[0]
+    cur2.close()
+
     result = {
         "ok": True,
         "order_ids": order_ids,
@@ -82,6 +94,9 @@ def create_order():
 
     if total <= 0:
         result["flag"] = "FLAG{negative_qty}"
+
+    if recent_count > 1:
+        result["flag"] = "FLAG{race_condition}"
 
     return jsonify(result), 201
 
