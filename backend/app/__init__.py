@@ -3,8 +3,16 @@ import os
 from flask import Flask, request, Response
 from functools import wraps
 
+import sentry_sdk
+
 from backend.app.config import Config
 from backend.app.db import close_db, init_db
+
+if Config.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=Config.SENTRY_DSN,
+        send_default_pii=True,
+    )
 
 
 def _check_basic_auth(username, password):
