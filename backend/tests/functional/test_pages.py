@@ -11,6 +11,16 @@ class TestHomePage:
         assert b"product-card" in resp.data
 
 
+class TestAboutPage:
+    def test_about_returns_200(self, client):
+        resp = client.get("/about")
+        assert resp.status_code == 200
+
+    def test_about_has_content(self, client):
+        resp = client.get("/about")
+        assert "PivdenShop".encode() in resp.data
+
+
 class TestProductsPage:
     def test_products_page_returns_200(self, client):
         resp = client.get("/products")

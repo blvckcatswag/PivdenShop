@@ -5,6 +5,7 @@
 {% block content %}
 <section class="section">
     <div class="auth-card">
+        <a href="/" class="auth-close" title="Закрити">&times;</a>
         <h1 class="auth-title">Реєстрація</h1>
         <form id="register-form" class="auth-form" novalidate>
             <div class="form-group">
@@ -76,7 +77,8 @@ document.getElementById('register-form').addEventListener('submit', async functi
         const data = await resp.json();
         if (resp.ok) {
             localStorage.setItem('token', data.token);
-            window.location.href = '/profile';
+            document.cookie = 'token=' + data.token + '; path=/';
+            window.location.href = '/';
         } else {
             document.getElementById('form-message').textContent = data.error || 'Помилка реєстрації';
         }

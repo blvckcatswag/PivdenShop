@@ -120,7 +120,29 @@ document.addEventListener('click', function (e) {
     }
 
     if (e.target && e.target.id === 'modal-add-cart') {
-        alert('Додано в кошик!');
+        var cartToken = localStorage.getItem('token');
+        if (!cartToken) {
+            window.location.href = '/login';
+            return;
+        }
+
+        fetch('/api/cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + cartToken
+            },
+            body: JSON.stringify({ product_id: _currentProductId, quantity: 1 })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.ok) {
+                closeModal();
+                _showToast('Товар додано в кошик');
+            } else {
+                _showToast(data.error || 'Помилка');
+            }
+        });
     }
 });
 
@@ -132,3 +154,15 @@ function closeModal() {
 document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closeModal();
 });
+
+function _showToast(msg) {
+    var toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(function () { toast.classList.add('visible'); }, 10);
+    setTimeout(function () {
+        toast.classList.remove('visible');
+        setTimeout(function () { toast.remove(); }, 300);
+    }, 2500);
+}

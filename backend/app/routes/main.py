@@ -19,6 +19,11 @@ def debug_error():
     }), 500
 
 
+@main_bp.route("/about", methods=["GET"])
+def about():
+    return render_template("about.html")
+
+
 @main_bp.route("/", methods=["GET"])
 def index():
     db = get_db()
