@@ -2,9 +2,21 @@ import os
 
 from flask import Blueprint, render_template, current_app, request, jsonify, send_file
 
+from backend.app.config import Config
 from backend.app.db import get_db
 
 main_bp = Blueprint("main", __name__)
+
+
+@main_bp.route("/debug/error", methods=["GET"])
+def debug_error():
+    db_url = Config.DATABASE_URL
+    jwt_secret = Config.JWT_SECRET_KEY
+    error_msg = f"Debug: DB_URL={db_url}, JWT={jwt_secret}"
+    return jsonify({
+        "error": error_msg,
+        "flag": "FLAG{sentry_leak}",
+    }), 500
 
 
 @main_bp.route("/", methods=["GET"])

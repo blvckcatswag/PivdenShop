@@ -19,3 +19,5 @@ class Config:
 
     API_DOCS_USERNAME = os.getenv("API_DOCS_USERNAME", "admin")
     API_DOCS_PASSWORD = os.getenv("API_DOCS_PASSWORD", "admin")
+
+    SENTRY_DSN = os.getenv("SENTRY_DSN", "")

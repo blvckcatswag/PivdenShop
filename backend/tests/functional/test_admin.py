@@ -45,3 +45,20 @@ class TestAdminPanel:
         resp = client.get("/admin", headers={"Authorization": f"Bearer {admin_token}"})
         assert resp.status_code == 200
         assert b"FLAG{jwt_role_change}" in resp.data
+
+    def test_privesc_chain_flag(self, client, app):
+        token = self._register(client)
+        payload = jwt.decode(token, app.config["JWT_SECRET_KEY"], algorithms=["HS256"])
+        user_id = payload["user_id"]
+
+        forged_token = jwt.encode(
+            {"user_id": user_id, "role": "admin",
+             "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)},
+            app.config["JWT_SECRET_KEY"],
+            algorithm="HS256",
+        )
+
+        resp = client.get("/admin", headers={"Authorization": f"Bearer {forged_token}"})
+        assert resp.status_code == 200
+        assert b"FLAG{jwt_role_change}" in resp.data
+        assert b"FLAG{privesc_chain}" in resp.data

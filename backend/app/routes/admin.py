@@ -15,6 +15,10 @@ def admin_panel():
     db = get_db()
     cur = db.cursor()
 
+    cur.execute("SELECT is_admin FROM users WHERE id = %s", (g.user_id,))
+    row = cur.fetchone()
+    is_real_admin = row[0] if row else False
+
     cur.execute(
         "SELECT id, email, full_name, is_seller, is_admin, created_at FROM users ORDER BY id"
     )
@@ -51,7 +55,8 @@ def admin_panel():
 
     cur.close()
 
-    return render_template("admin.html", users=users, orders=orders)
+    privesc = not is_real_admin
+    return render_template("admin.html", users=users, orders=orders, privesc=privesc)
 
 
 @admin_bp.route("/admin/reports/users", methods=["GET"])

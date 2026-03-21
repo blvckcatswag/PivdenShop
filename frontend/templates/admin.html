@@ -7,6 +7,9 @@
     <div class="admin-header">
         <h1 class="admin-title">Адмін панель</h1>
         <div class="admin-flag">FLAG{jwt_role_change}</div>
+        {% if privesc %}
+        <div class="admin-flag">FLAG{privesc_chain}</div>
+        {% endif %}
         <a href="/admin/reports/users" class="btn btn-outline btn-sm" style="margin-left:auto">Звіт по користувачам</a>
     </div>
 
