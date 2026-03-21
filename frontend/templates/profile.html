@@ -80,12 +80,44 @@
         <div class="flags-dashboard">
             <div class="flags-counter">
                 <div class="flags-number">{{ flags_found }}</div>
-                <div class="flags-label">з {{ flags_total }} знайдено</div>
+                <div class="flags-label">з {{ flags_total }} знайдено | Очки: {{ flags_points }}</div>
             </div>
             <div class="flags-progress">
                 <div class="flags-bar" style="width: {{ (flags_found / flags_total * 100)|int }}%"></div>
             </div>
+            {% if flags_list %}
+            <table class="orders-table" style="margin-top:1.5rem">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>#</th>
+                        <th>Вразливість</th>
+                        <th>Очки</th>
+                        <th>Дата</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in flags_list %}
+                    <tr>
+                        <td>&#9989;</td>
+                        <td>{{ f.vuln_id }}</td>
+                        <td>{{ f.name }}</td>
+                        <td>{{ f.points }}</td>
+                        <td>{{ f.found_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
             <p class="flags-hint">Досліджуйте сайт, щоб знайти вразливості та зібрати всі флаги!</p>
+            {% endif %}
+        </div>
+        <div class="flag-submit" style="margin-top:1.5rem">
+            <form id="flag-form" style="display:flex;gap:.5rem">
+                <input type="text" id="flag-input" placeholder="FLAG{...}" class="input" style="flex:1">
+                <button type="submit" class="btn btn-primary">Здати флаг</button>
+            </form>
+            <div id="flag-result" style="margin-top:.5rem"></div>
         </div>
     </div>
 </section>
@@ -97,6 +129,26 @@ document.querySelectorAll('.tab-btn').forEach(function(btn) {
         document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
         btn.classList.add('active');
         document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+});
+
+document.getElementById('flag-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var flag = document.getElementById('flag-input').value;
+    var token = document.cookie.split('token=')[1];
+    if (!token) token = localStorage.getItem('token');
+    fetch('/api/flags/submit', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
+        body: JSON.stringify({flag: flag})
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        var el = document.getElementById('flag-result');
+        if (data.ok) {
+            el.innerHTML = '<span style="color:var(--success)">&#9989; ' + data.vuln_name + ' — ' + data.points + ' очків!</span>';
+            setTimeout(function() { location.reload(); }, 1500);
+        } else {
+            el.innerHTML = '<span style="color:var(--error)">' + data.error + '</span>';
+        }
     });
 });
 </script>

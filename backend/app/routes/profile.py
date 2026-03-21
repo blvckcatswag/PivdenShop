@@ -38,11 +38,26 @@ def get_profile():
         })
 
     cur.execute(
-        "SELECT COUNT(*) FROM flags WHERE user_id = %s",
+        "SELECT vuln_id, flag_value, found_at FROM flags WHERE user_id = %s ORDER BY found_at",
         (g.user_id,),
     )
-    flags_found = cur.fetchone()[0]
+    flags_rows = cur.fetchall()
+    flags_found = len(flags_rows)
     cur.close()
+
+    from backend.app.routes.flags import VALID_FLAGS
+    flags_list = []
+    flags_points = 0
+    for fr in flags_rows:
+        meta = VALID_FLAGS.get(fr[1], {})
+        pts = meta.get("points", 0)
+        flags_points += pts
+        flags_list.append({
+            "vuln_id": fr[0],
+            "name": meta.get("name", ""),
+            "points": pts,
+            "found_at": fr[2].strftime("%d.%m.%Y %H:%M") if fr[2] else "",
+        })
 
     user = {
         "id": row[0],
@@ -66,6 +81,8 @@ def get_profile():
         orders=orders,
         flags_found=flags_found,
         flags_total=24,
+        flags_list=flags_list,
+        flags_points=flags_points,
     )
 
 

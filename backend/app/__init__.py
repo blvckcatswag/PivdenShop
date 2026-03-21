@@ -71,6 +71,7 @@ def create_app(testing=False):
     from backend.app.routes.seller import seller_bp
     from backend.app.routes.chats import chats_bp
     from backend.app.routes.notifications import notifications_bp
+    from backend.app.routes.flags import flags_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(profile_bp)
     app.register_blueprint(products_bp)
@@ -81,6 +82,7 @@ def create_app(testing=False):
     app.register_blueprint(seller_bp)
     app.register_blueprint(chats_bp)
     app.register_blueprint(notifications_bp)
+    app.register_blueprint(flags_bp)
 
     from backend.app.websocket.chat import init_websocket
     init_websocket(app)
