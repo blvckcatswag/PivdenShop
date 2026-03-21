@@ -13,6 +13,8 @@ class Config:
         "DATABASE_URL",
         "postgresql://postgres:PostgreSQL_SuperAdmin_Password1337!@localhost:5432/pivdenshop",
     )
+    if DATABASE_URL.startswith("postgresql://"):
+        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgres://", 1)
 
     REDIS_ENABLED = os.getenv("REDIS_ENABLED", "false").lower() == "true"
     REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
