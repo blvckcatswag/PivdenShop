@@ -17,11 +17,15 @@ def _deny(message):
 def jwt_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        token = None
         auth_header = request.headers.get("Authorization", "")
-        if not auth_header.startswith("Bearer "):
-            return _deny("Токен відсутній")
+        if auth_header.startswith("Bearer "):
+            token = auth_header.split(" ", 1)[1]
+        else:
+            token = request.cookies.get("token")
 
-        token = auth_header.split(" ", 1)[1]
+        if not token:
+            return _deny("Токен відсутній")
         try:
             payload = jwt.decode(
                 token,

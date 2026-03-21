@@ -20,15 +20,33 @@
 
                 <div class="user-menu">
                     <button class="user-menu-toggle">
-                        <span class="avatar">?</span>
-                        <span class="user-name">Гість</span>
+                        <span class="avatar" id="header-avatar">?</span>
+                        <span class="user-name" id="header-username">Гість</span>
                         <span>&#9662;</span>
                     </button>
-                    <div class="user-dropdown">
+                    <div class="user-dropdown" id="header-dropdown">
                         <a href="/login">Увійти</a>
                         <a href="/register">Реєстрація</a>
                     </div>
                 </div>
+                <script>
+                (function() {
+                    var t = localStorage.getItem('token');
+                    if (!t) return;
+                    try {
+                        var p = JSON.parse(atob(t.split('.')[1]));
+                        if (p.exp * 1000 < Date.now()) return;
+                        var dd = document.getElementById('header-dropdown');
+                        dd.innerHTML = '<a href="/profile">Мій кабінет</a><a href="/orders">Замовлення</a><a href="#" id="logout-link">Вийти</a>';
+                        document.getElementById('logout-link').addEventListener('click', function(e) {
+                            e.preventDefault();
+                            localStorage.removeItem('token');
+                            document.cookie = 'token=; path=/; max-age=0';
+                            window.location.href = '/';
+                        });
+                    } catch(e) {}
+                })();
+                </script>
             </div>
         </div>
 

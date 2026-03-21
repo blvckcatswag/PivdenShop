@@ -40,3 +40,14 @@ class TestJwtMiddleware:
             "Authorization": "Bearer invalid.token.here",
         })
         assert resp.status_code == 401
+
+    def test_protected_route_with_cookie_token(self, client, app):
+        reg = client.post("/register", json={
+            "email": "cookie@example.com",
+            "phone": "+380501234568",
+            "password": "securePass1",
+        })
+        token = reg.get_json()["token"]
+        client.set_cookie("token", token, domain="localhost")
+        resp = client.get("/profile")
+        assert resp.status_code == 200

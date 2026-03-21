@@ -5,6 +5,7 @@
 {% block content %}
 <section class="section">
     <div class="auth-card">
+        <a href="/" class="auth-close" title="Закрити">&times;</a>
         <h1 class="auth-title">Вхід</h1>
         <form id="login-form" class="auth-form" novalidate>
             <div class="form-group">
@@ -56,7 +57,8 @@ document.getElementById('login-form').addEventListener('submit', async function(
         const data = await resp.json();
         if (resp.ok) {
             localStorage.setItem('token', data.token);
-            window.location.href = '/profile';
+            document.cookie = 'token=' + data.token + '; path=/';
+            window.location.href = '/';
         } else {
             document.getElementById('form-message').textContent = data.error || 'Помилка входу';
         }
