@@ -1,7 +1,17 @@
 from functools import wraps
 
 import jwt
-from flask import request, jsonify, current_app, g
+from flask import request, jsonify, redirect, current_app, g
+
+
+def _wants_html():
+    return "text/html" in request.headers.get("Accept", "")
+
+
+def _deny(message):
+    if _wants_html():
+        return redirect("/login")
+    return jsonify({"error": message}), 401
 
 
 def jwt_required(f):
@@ -9,7 +19,7 @@ def jwt_required(f):
     def decorated(*args, **kwargs):
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
-            return jsonify({"error": "Токен відсутній"}), 401
+            return _deny("Токен відсутній")
 
         token = auth_header.split(" ", 1)[1]
         try:
@@ -19,9 +29,9 @@ def jwt_required(f):
                 algorithms=["HS256"],
             )
         except jwt.ExpiredSignatureError:
-            return jsonify({"error": "Токен протермінований"}), 401
+            return _deny("Токен протермінований")
         except jwt.InvalidTokenError:
-            return jsonify({"error": "Невалідний токен"}), 401
+            return _deny("Невалідний токен")
 
         g.user_id = payload["user_id"]
         g.user_role = payload.get("role", "buyer")
