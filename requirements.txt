@@ -8,3 +8,4 @@ flasgger==0.9.7.1
 requests==2.32.3
 sentry-sdk[flask]==2.19.2
 redis==5.2.1
+gunicorn==23.0.0
