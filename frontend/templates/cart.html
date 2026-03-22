@@ -34,7 +34,7 @@
                     </td>
                     <td>{{ "%.0f"|format(item.price) }} грн</td>
                     <td>
-                        <input type="number" class="cart-qty" value="{{ item.quantity }}" data-price="{{ item.price }}">
+                        <input type="number" class="cart-qty" value="{{ item.quantity }}" data-price="{{ item.price }}" min="1" max="999">
                     </td>
                     <td class="cart-subtotal">{{ "%.0f"|format(item.subtotal) }} грн</td>
                     <td>
@@ -79,6 +79,9 @@ document.querySelectorAll('.cart-qty').forEach(function(input) {
         var row = this.closest('tr');
         var price = parseFloat(this.dataset.price);
         var qty = parseInt(this.value);
+        if (isNaN(qty) || qty < 1) qty = 1;
+        if (qty > 999) qty = 999;
+        this.value = qty;
         var subtotal = price * qty;
         row.querySelector('.cart-subtotal').textContent = subtotal + ' грн';
 

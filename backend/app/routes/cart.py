@@ -19,6 +19,13 @@ def cart_add():
     if not product_id:
         return jsonify({"error": "product_id обов'язковий"}), 400
 
+    try:
+        quantity = int(quantity)
+    except (TypeError, ValueError):
+        quantity = 1
+    if quantity < 1 or quantity > 999:
+        return jsonify({"error": "Кількість від 1 до 999"}), 400
+
     item_id = add_to_cart(g.user_id, product_id, quantity)
     return jsonify({"ok": True, "item_id": item_id}), 201
 

@@ -21,7 +21,8 @@
             </div>
             <div class="form-group">
                 <label for="bio">Про себе</label>
-                <textarea id="bio" name="bio" rows="4" placeholder="Розкажіть про себе...">{{ user.bio }}</textarea>
+                <textarea id="bio" name="bio" rows="4" maxlength="500" placeholder="Розкажіть про себе...">{{ user.bio }}</textarea>
+                <small id="bio-counter" style="color:var(--text-secondary)">{{ (user.bio|length if user.bio else 0) }}/500</small>
             </div>
             <div class="form-message" id="form-message"></div>
             <div style="display:flex;gap:12px">
@@ -33,6 +34,10 @@
 </section>
 
 <script>
+document.getElementById('bio').addEventListener('input', function() {
+    document.getElementById('bio-counter').textContent = this.value.length + '/500';
+});
+
 document.getElementById('edit-profile-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     var msg = document.getElementById('form-message');

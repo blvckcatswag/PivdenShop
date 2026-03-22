@@ -17,7 +17,12 @@
             <p class="profile-email">{{ user.email }}</p>
             <p class="profile-since">На платформі з {{ user.created_at }}</p>
         </div>
-        <a href="/profile/edit" class="btn btn-outline">Редагувати</a>
+        <div style="display:flex;gap:8px">
+            <a href="/profile/edit" class="btn btn-outline">Редагувати</a>
+            {% if not user.is_seller %}
+            <button id="become-seller-btn" class="btn btn-gradient">Стати продавцем</button>
+            {% endif %}
+        </div>
     </div>
 
     <div class="profile-tabs">
@@ -151,5 +156,24 @@ document.getElementById('flag-form').addEventListener('submit', function(e) {
         }
     });
 });
+
+var sellerBtn = document.getElementById('become-seller-btn');
+if (sellerBtn) {
+    sellerBtn.addEventListener('click', function() {
+        var token = localStorage.getItem('token');
+        if (!token) { alert('Увійдіть для цієї дії'); return; }
+        if (!confirm('Ви впевнені, що хочете стати продавцем?')) return;
+        fetch('/api/become-seller', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
+            body: JSON.stringify({})
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.is_seller) {
+                alert('Вітаємо! Тепер ви продавець.');
+                location.reload();
+            }
+        });
+    });
+}
 </script>
 {% endblock %}
