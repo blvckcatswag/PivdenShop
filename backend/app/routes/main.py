@@ -52,12 +52,24 @@ def index():
             "rating": int(row[6]),
         })
 
+    category_emoji = {
+        "Електроніка": "💻",
+        "Одяг": "👗",
+        "Дім": "🏠",
+        "Спорт": "⚽",
+        "Краса": "💄",
+    }
+
     cur.execute(
         "SELECT category, COUNT(*) as cnt FROM products GROUP BY category ORDER BY cnt DESC"
     )
     categories = []
     for row in cur.fetchall():
-        categories.append({"name": row[0], "count": row[1]})
+        categories.append({
+            "name": row[0],
+            "count": row[1],
+            "emoji": category_emoji.get(row[0], "📦"),
+        })
 
     cur.execute(
         "SELECT u.id, u.full_name, COALESCE(AVG(r.rating), 5) as avg_rating, "

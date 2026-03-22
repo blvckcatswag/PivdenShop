@@ -91,11 +91,10 @@
 <section class="section">
     <h2 class="section-title">Популярні категорії</h2>
     <div class="categories-grid">
-        {% set cat_icons = {'Електроніка': '&#128187;', 'Одяг': '&#128085;', 'Дім': '&#127968;', 'Спорт': '&#9917;', 'Краса': '&#128132;'} %}
         {% set cat_colors = {'Електроніка': 'linear-gradient(135deg, #667eea, #764ba2)', 'Одяг': 'linear-gradient(135deg, #f093fb, #f5576c)', 'Дім': 'linear-gradient(135deg, #4facfe, #00f2fe)', 'Спорт': 'linear-gradient(135deg, #43e97b, #38f9d7)', 'Краса': 'linear-gradient(135deg, #fa709a, #fee140)'} %}
         {% for cat in categories %}
         <a href="/products?category={{ cat.name }}" class="category-card" style="--cat-gradient: {{ cat_colors.get(cat.name, 'linear-gradient(135deg, #7C3AED, #3B82F6)') }}">
-            <span class="category-card-icon">{{ cat_icons.get(cat.name, '&#128230;') }}</span>
+            <span class="category-card-icon">{{ cat.emoji }}</span>
             <strong class="category-card-name">{{ cat.name }}</strong>
             <span class="category-card-count">{{ cat.count }} товарів</span>
         </a>
