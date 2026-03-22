@@ -71,7 +71,7 @@
             </div>
 
             <div class="modal-actions">
-                <button class="btn btn-outline" onclick="alert('Чат буде доступний пізніше')">Написати продавцю</button>
+                <button class="btn btn-outline" id="modal-contact-seller">Написати продавцю</button>
                 <button class="btn btn-gradient" id="modal-add-cart">Додати в кошик</button>
             </div>
         </div>
@@ -98,6 +98,22 @@
         }
         updateNotifCount();
         setInterval(updateNotifCount, 30000);
+        function updateCartCount() {
+            fetch('/api/cart/count', {
+                headers: {'Authorization': 'Bearer ' + token}
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var badge = document.getElementById('cart-badge');
+                if (badge && data.count !== undefined) {
+                    badge.textContent = data.count;
+                    badge.style.display = data.count > 0 ? 'inline-block' : 'none';
+                }
+            })
+            .catch(function() {});
+        }
+        updateCartCount();
+        window._updateCartCount = updateCartCount;
     })();
     </script>
 </body>

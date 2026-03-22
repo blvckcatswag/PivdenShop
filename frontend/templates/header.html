@@ -15,7 +15,7 @@
                 </a>
                 <a href="/cart" class="icon-btn" title="Кошик">
                     &#128722;
-                    <span class="badge">0</span>
+                    <span class="badge" id="cart-badge">0</span>
                 </a>
 
                 <div class="user-menu">
@@ -44,6 +44,15 @@
                             document.cookie = 'token=; path=/; max-age=0';
                             window.location.href = '/';
                         });
+                        fetch('/api/profile', {
+                            headers: {'Accept': 'application/json', 'Authorization': 'Bearer ' + t}
+                        }).then(function(r) { return r.json(); }).then(function(u) {
+                            var name = u.full_name || u.email || '';
+                            if (name) {
+                                document.getElementById('header-username').textContent = name;
+                                document.getElementById('header-avatar').textContent = name[0].toUpperCase();
+                            }
+                        }).catch(function() {});
                     } catch(e) {}
                 })();
                 </script>

@@ -57,6 +57,27 @@
                 {% endfor %}
             </div>
 
+            <script>
+            (function() {
+                var searchInput = document.querySelector('.catalog-layout .search-form input[name="search"]');
+                if (!searchInput) return;
+                var debounceTimer;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(debounceTimer);
+                    var query = this.value.trim();
+                    debounceTimer = setTimeout(function() {
+                        var url = '/products';
+                        var params = [];
+                        if (query) params.push('search=' + encodeURIComponent(query));
+                        var cat = new URLSearchParams(window.location.search).get('category');
+                        if (cat) params.push('category=' + encodeURIComponent(cat));
+                        if (params.length) url += '?' + params.join('&');
+                        window.location.href = url;
+                    }, 500);
+                });
+            })();
+            </script>
+
             {% if total_pages > 1 %}
             <div class="pagination">
                 {% if page > 1 %}

@@ -63,6 +63,14 @@
         <div class="checkout-step" id="step-3">
             <h3>Підтвердження</h3>
             <div class="checkout-summary">
+                <div class="checkout-item" style="border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:8px">
+                    <span style="font-weight:600">Адреса доставки:</span>
+                    <span id="summary-address"></span>
+                </div>
+                <div class="checkout-item" style="border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:8px">
+                    <span style="font-weight:600">Картка:</span>
+                    <span id="summary-card"></span>
+                </div>
                 {% for item in items %}
                 <div class="checkout-item">
                     <span>{{ item.title }} × {{ item.quantity }}</span>
@@ -89,6 +97,12 @@ function goToStep(n) {
     document.querySelectorAll('.checkout-steps .step').forEach(function(s) { s.classList.remove('active'); });
     document.getElementById('step-' + n).classList.add('active');
     document.getElementById('step-indicator-' + n).classList.add('active');
+    if (n === 3) {
+        var addr = document.getElementById('address').value || '—';
+        document.getElementById('summary-address').textContent = addr;
+        var card = document.querySelector('input[name="card"]:checked').value;
+        document.getElementById('summary-card').textContent = card === 'new' ? 'Нова картка' : '**** ' + card;
+    }
 }
 
 document.querySelectorAll('input[name="card"]').forEach(function(radio) {
@@ -124,10 +138,11 @@ function submitOrder() {
         if (data.ok) {
             var msg = document.getElementById('order-message');
             msg.style.color = 'var(--success)';
-            msg.textContent = 'Замовлення оформлено! Сума: ' + data.total + ' грн';
+            msg.textContent = 'Замовлення оформлено! Переадресація...';
             if (data.flag) {
                 msg.textContent += ' ' + data.flag;
             }
+            setTimeout(function() { window.location.href = '/orders'; }, 1500);
         } else {
             document.getElementById('order-message').textContent = data.error || 'Помилка';
             document.getElementById('pay-btn').disabled = false;
