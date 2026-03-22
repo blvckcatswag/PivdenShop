@@ -28,6 +28,7 @@ def about():
 def index():
     db = get_db()
     cur = db.cursor()
+
     cur.execute(
         "SELECT p.id, p.title, p.price, p.image_url, p.category, "
         "u.full_name, COALESCE(AVG(r.rating), 5) as avg_rating "
@@ -38,7 +39,6 @@ def index():
         "ORDER BY p.created_at DESC LIMIT 8"
     )
     rows = cur.fetchall()
-    cur.close()
 
     products = []
     for row in rows:
@@ -52,7 +52,63 @@ def index():
             "rating": int(row[6]),
         })
 
-    return render_template("index.html", products=products)
+    cur.execute(
+        "SELECT category, COUNT(*) as cnt FROM products GROUP BY category ORDER BY cnt DESC"
+    )
+    categories = []
+    for row in cur.fetchall():
+        categories.append({"name": row[0], "count": row[1]})
+
+    cur.execute(
+        "SELECT u.id, u.full_name, COALESCE(AVG(r.rating), 5) as avg_rating, "
+        "COUNT(DISTINCT o.id) as sales_count "
+        "FROM users u "
+        "JOIN products p ON p.seller_id = u.id "
+        "LEFT JOIN reviews r ON r.product_id = p.id "
+        "LEFT JOIN orders o ON o.seller_id = u.id AND o.status = 'completed' "
+        "WHERE u.is_seller = true "
+        "GROUP BY u.id "
+        "ORDER BY avg_rating DESC LIMIT 6"
+    )
+    sellers = []
+    for row in cur.fetchall():
+        sellers.append({
+            "id": row[0],
+            "name": row[1],
+            "rating": round(float(row[2]), 1),
+            "sales_count": row[3],
+        })
+
+    cur.close()
+
+    return render_template("index.html", products=products, categories=categories, sellers=sellers)
+
+
+@main_bp.route("/api/sellers", methods=["GET"])
+def api_sellers():
+    db = get_db()
+    cur = db.cursor()
+    cur.execute(
+        "SELECT u.id, u.full_name, COALESCE(AVG(r.rating), 5) as avg_rating, "
+        "COUNT(DISTINCT o.id) as sales_count "
+        "FROM users u "
+        "JOIN products p ON p.seller_id = u.id "
+        "LEFT JOIN reviews r ON r.product_id = p.id "
+        "LEFT JOIN orders o ON o.seller_id = u.id AND o.status = 'completed' "
+        "WHERE u.is_seller = true "
+        "GROUP BY u.id "
+        "ORDER BY avg_rating DESC LIMIT 10"
+    )
+    sellers = []
+    for row in cur.fetchall():
+        sellers.append({
+            "id": row[0],
+            "name": row[1],
+            "rating": round(float(row[2]), 1),
+            "sales_count": row[3],
+        })
+    cur.close()
+    return jsonify({"sellers": sellers}), 200
 
 
 @main_bp.route("/static/uploads/", methods=["GET"])

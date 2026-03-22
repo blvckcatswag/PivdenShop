@@ -8,15 +8,139 @@
      admin credentials: admin@pivdenshop.ua / admin123
 -->
 
-<section class="hero">
-    <h1>Купуй та продавай на PivdenShop</h1>
-    <p>Найкращі товари від українських продавців з доставкою по всій країні</p>
-    <a href="/products" class="btn btn-primary">Переглянути товари</a>
+<!-- HERO SLIDER -->
+<section class="hero-slider" id="hero-slider">
+    <div class="hero-slides">
+        <div class="hero-slide active" style="background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 50%, #06B6D4 100%)">
+            <div class="hero-slide-content">
+                <h1>Купуй та продавай на PivdenShop</h1>
+                <p>Найкращі товари від українських продавців з доставкою по всій країні</p>
+                <a href="/products" class="btn btn-primary">Переглянути товари</a>
+            </div>
+            <div class="hero-slide-decor">&#128722;</div>
+        </div>
+        <div class="hero-slide" style="background: linear-gradient(135deg, #F59E0B 0%, #EF4444 50%, #EC4899 100%)">
+            <div class="hero-slide-content">
+                <h1>Знижки до -40%</h1>
+                <p>Встигніть придбати товари за найкращими цінами</p>
+                <a href="/products" class="btn btn-primary">Дивитись акції</a>
+            </div>
+            <div class="hero-slide-decor">&#127873;</div>
+        </div>
+        <div class="hero-slide" style="background: linear-gradient(135deg, #10B981 0%, #3B82F6 50%, #8B5CF6 100%)">
+            <div class="hero-slide-content">
+                <h1>Стань продавцем</h1>
+                <p>Відкрий свій магазин безкоштовно та починай заробляти вже сьогодні</p>
+                <a href="/seller/products/new" class="btn btn-primary">Почати продавати</a>
+            </div>
+            <div class="hero-slide-decor">&#128176;</div>
+        </div>
+        <div class="hero-slide" style="background: linear-gradient(135deg, #EC4899 0%, #8B5CF6 50%, #3B82F6 100%)">
+            <div class="hero-slide-content">
+                <h1>Безпечні покупки</h1>
+                <p>Захист покупця, швидка доставка та гарантія якості на кожне замовлення</p>
+                <a href="/products" class="btn btn-primary">Обрати товар</a>
+            </div>
+            <div class="hero-slide-decor">&#128274;</div>
+        </div>
+    </div>
+    <button class="hero-arrow hero-arrow-left" id="hero-prev">&#10094;</button>
+    <button class="hero-arrow hero-arrow-right" id="hero-next">&#10095;</button>
+    <div class="hero-dots" id="hero-dots">
+        <span class="hero-dot active" data-index="0"></span>
+        <span class="hero-dot" data-index="1"></span>
+        <span class="hero-dot" data-index="2"></span>
+        <span class="hero-dot" data-index="3"></span>
+    </div>
+    <div class="hero-wave"></div>
 </section>
 
+<!-- ADVANTAGES -->
+<section class="advantages">
+    <div class="advantage-item">
+        <span class="advantage-icon">&#128666;</span>
+        <div>
+            <strong>Доставка по Україні</strong>
+            <span>Швидко та надійно</span>
+        </div>
+    </div>
+    <div class="advantage-item">
+        <span class="advantage-icon">&#128274;</span>
+        <div>
+            <strong>Безпечна оплата</strong>
+            <span>Захист покупця</span>
+        </div>
+    </div>
+    <div class="advantage-item">
+        <span class="advantage-icon">&#9989;</span>
+        <div>
+            <strong>Гарантія якості</strong>
+            <span>Перевірені продавці</span>
+        </div>
+    </div>
+    <div class="advantage-item">
+        <span class="advantage-icon">&#128172;</span>
+        <div>
+            <strong>Підтримка 24/7</strong>
+            <span>Завжди на зв'язку</span>
+        </div>
+    </div>
+</section>
+
+<!-- CATEGORIES -->
 <section class="section">
-    <h2 class="section-title">Популярні товари</h2>
-    <div class="products-grid">
+    <h2 class="section-title">Популярні категорії</h2>
+    <div class="categories-grid">
+        {% set cat_icons = {'Електроніка': '&#128187;', 'Одяг': '&#128085;', 'Дім': '&#127968;', 'Спорт': '&#9917;', 'Краса': '&#128132;'} %}
+        {% set cat_colors = {'Електроніка': 'linear-gradient(135deg, #667eea, #764ba2)', 'Одяг': 'linear-gradient(135deg, #f093fb, #f5576c)', 'Дім': 'linear-gradient(135deg, #4facfe, #00f2fe)', 'Спорт': 'linear-gradient(135deg, #43e97b, #38f9d7)', 'Краса': 'linear-gradient(135deg, #fa709a, #fee140)'} %}
+        {% for cat in categories %}
+        <a href="/products?category={{ cat.name }}" class="category-card" style="--cat-gradient: {{ cat_colors.get(cat.name, 'linear-gradient(135deg, #7C3AED, #3B82F6)') }}">
+            <span class="category-card-icon">{{ cat_icons.get(cat.name, '&#128230;') }}</span>
+            <strong class="category-card-name">{{ cat.name }}</strong>
+            <span class="category-card-count">{{ cat.count }} товарів</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- SALE BANNER -->
+<section class="sale-banner">
+    <div class="sale-banner-bg"></div>
+    <div class="sale-banner-content">
+        <span class="sale-badge">&#128293; Акція</span>
+        <h2 class="sale-title">SALE до -40%</h2>
+        <p class="sale-subtitle">Встигніть придбати до закінчення акції</p>
+        <div class="sale-timer" id="sale-timer">
+            <div class="timer-block">
+                <span class="timer-num" id="timer-hours">00</span>
+                <span class="timer-label">годин</span>
+            </div>
+            <span class="timer-sep">:</span>
+            <div class="timer-block">
+                <span class="timer-num" id="timer-minutes">00</span>
+                <span class="timer-label">хвилин</span>
+            </div>
+            <span class="timer-sep">:</span>
+            <div class="timer-block">
+                <span class="timer-num" id="timer-seconds">00</span>
+                <span class="timer-label">секунд</span>
+            </div>
+        </div>
+        <a href="/products" class="btn btn-primary" style="margin-top: 16px">Дивитись усі акції</a>
+    </div>
+</section>
+
+<!-- TABBED PRODUCTS -->
+<section class="section">
+    <div class="section-header-tabs">
+        <h2 class="section-title" style="margin-bottom:0">Товари</h2>
+        <div class="product-tabs" id="product-tabs">
+            <button class="product-tab active" data-tab="popular">Популярні</button>
+            <button class="product-tab" data-tab="new">Нові</button>
+            <button class="product-tab" data-tab="sale">Зі знижкою</button>
+        </div>
+    </div>
+    <div class="products-grid" id="home-products-grid">
         {% for product in products %}
         <div class="product-card" onclick="openModal({{ product.id }})">
             <div class="card-image">
@@ -42,5 +166,63 @@
         </div>
         {% endfor %}
     </div>
+    <div style="text-align:center; margin-top:24px">
+        <a href="/products" class="btn btn-outline">Показати всі товари</a>
+    </div>
 </section>
+
+<!-- HOW IT WORKS -->
+<section class="section how-it-works" id="how-it-works">
+    <h2 class="section-title" style="text-align:center">Як це працює</h2>
+    <div class="steps-grid">
+        <div class="step-card" data-step="1">
+            <div class="step-num">1</div>
+            <span class="step-icon">&#128269;</span>
+            <h3>Оберіть товар</h3>
+            <p>Знайдіть потрібний товар серед тисяч пропозицій</p>
+        </div>
+        <div class="step-arrow">&#10132;</div>
+        <div class="step-card" data-step="2">
+            <div class="step-num">2</div>
+            <span class="step-icon">&#128179;</span>
+            <h3>Оформіть замовлення</h3>
+            <p>Заповніть дані доставки та оберіть спосіб оплати</p>
+        </div>
+        <div class="step-arrow">&#10132;</div>
+        <div class="step-card" data-step="3">
+            <div class="step-num">3</div>
+            <span class="step-icon">&#128666;</span>
+            <h3>Отримайте доставку</h3>
+            <p>Швидка доставка по всій Україні до дверей</p>
+        </div>
+        <div class="step-arrow">&#10132;</div>
+        <div class="step-card" data-step="4">
+            <div class="step-num">4</div>
+            <span class="step-icon">&#11088;</span>
+            <h3>Залиште відгук</h3>
+            <p>Поділіться враженнями та допоможіть іншим покупцям</p>
+        </div>
+    </div>
+</section>
+
+<!-- TOP SELLERS -->
+<section class="section">
+    <h2 class="section-title">Топ продавці</h2>
+    <div class="sellers-carousel" id="sellers-carousel">
+        {% for seller in sellers %}
+        <div class="seller-card">
+            <div class="seller-card-avatar">{{ seller.name[0] if seller.name else 'S' }}</div>
+            <div class="seller-card-name">{{ seller.name }}</div>
+            <div class="seller-card-rating">&#11088; {{ seller.rating }}</div>
+            <div class="seller-card-sales">{{ seller.sales_count }} продажів</div>
+        </div>
+        {% endfor %}
+        <a href="/seller/products/new" class="seller-card seller-card-cta">
+            <span class="seller-cta-icon">&#128640;</span>
+            <strong>Стати продавцем</strong>
+            <span>Відкрийте свій магазин</span>
+        </a>
+    </div>
+</section>
+
 {% endblock %}

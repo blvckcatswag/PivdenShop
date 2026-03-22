@@ -96,14 +96,26 @@ def _products_json(search):
     cur = db.cursor()
 
     limit = request.args.get("limit", 0, type=int)
+    sort = request.args.get("sort", "")
+
+    sort_map = {
+        "newest": "ORDER BY created_at DESC",
+        "price_asc": "ORDER BY price ASC",
+        "price_desc": "ORDER BY price DESC",
+    }
+    order_clause = sort_map.get(sort, "")
 
     if search:
         query = f"SELECT id, seller_id, title, description, price, category, image_url, created_at FROM products WHERE title ILIKE '%{search}%'"
+        if order_clause:
+            query += " " + order_clause
         if limit > 0:
             query += f" LIMIT {int(limit)}"
         cur.execute(query)
     else:
         query = "SELECT id, seller_id, title, description, price, category, image_url, created_at FROM products"
+        if order_clause:
+            query += " " + order_clause
         if limit > 0:
             query += f" LIMIT {int(limit)}"
         cur.execute(query)
