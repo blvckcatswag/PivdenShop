@@ -209,6 +209,7 @@ __marimo__/
 # Project docs (not for repo)
 CLAUDE.md
 PivdenShop_TZ.docx
+/REDESIGN_TZ.md
 
 # Uploads (keep directory, ignore files)
 frontend/static/uploads/*
