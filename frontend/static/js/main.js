@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // User menu toggle
     var toggle = document.querySelector('.user-menu-toggle');
     var dropdown = document.querySelector('.user-dropdown');
 
@@ -13,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Ripple effect
     document.addEventListener('click', function (e) {
         var btn = e.target.closest('.btn, .btn-gradient');
         if (!btn) return;
@@ -26,8 +28,211 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.appendChild(ripple);
         setTimeout(function () { ripple.remove(); }, 600);
     });
+
+    // Sticky header — hide top bar on scroll
+    var header = document.getElementById('site-header');
+    var lastScroll = 0;
+    if (header) {
+        window.addEventListener('scroll', function () {
+            var scrollY = window.pageYOffset || document.documentElement.scrollTop;
+            if (scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+            lastScroll = scrollY;
+        }, { passive: true });
+    }
+
+    // Theme toggle
+    _initTheme();
+
+    // Search autocomplete
+    _initSearchAutocomplete();
+
+    // Mini cart
+    _initMiniCart();
 });
 
+// ===== THEME =====
+function _initTheme() {
+    var saved = localStorage.getItem('theme');
+    if (saved === 'light') {
+        document.body.classList.add('light');
+    }
+
+    var btn = document.getElementById('theme-toggle');
+    if (btn) {
+        btn.addEventListener('click', function () {
+            document.body.classList.toggle('light');
+            var isLight = document.body.classList.contains('light');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        });
+    }
+}
+
+// ===== SEARCH AUTOCOMPLETE =====
+function _initSearchAutocomplete() {
+    var input = document.getElementById('header-search');
+    var dd = document.getElementById('search-dropdown');
+    if (!input || !dd) return;
+
+    var debounceTimer;
+    var resultsEl = document.getElementById('search-results');
+
+    input.addEventListener('focus', function () {
+        dd.classList.add('active');
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.search-wrapper')) {
+            dd.classList.remove('active');
+        }
+    });
+
+    input.addEventListener('input', function () {
+        clearTimeout(debounceTimer);
+        var query = this.value.trim();
+
+        if (query.length < 2) {
+            resultsEl.innerHTML = '<div class="search-dropdown-hint">Введіть від 2 символів для пошуку</div>';
+            return;
+        }
+
+        debounceTimer = setTimeout(function () {
+            fetch('/api/products?search=' + encodeURIComponent(query) + '&limit=5')
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    var products = data.products || [];
+                    if (products.length === 0) {
+                        resultsEl.innerHTML = '<div class="search-dropdown-hint">Нічого не знайдено</div>';
+                        return;
+                    }
+
+                    var html = '';
+                    products.forEach(function (p) {
+                        var title = _highlightMatch(p.title, query);
+                        var imgHtml = p.image_url
+                            ? '<img src="' + p.image_url + '" alt="">'
+                            : _getCategoryIcon(p.category);
+
+                        html += '<a href="/products?search=' + encodeURIComponent(query) + '" class="search-result-item" data-id="' + p.id + '">' +
+                            '<div class="search-result-img">' + imgHtml + '</div>' +
+                            '<div class="search-result-info">' +
+                            '<div class="search-result-title">' + title + '</div>' +
+                            '<div class="search-result-price">' + Math.round(p.price) + ' грн</div>' +
+                            '</div>' +
+                            '</a>';
+                    });
+                    resultsEl.innerHTML = html;
+
+                    resultsEl.querySelectorAll('.search-result-item').forEach(function (item) {
+                        item.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            var pid = this.dataset.id;
+                            dd.classList.remove('active');
+                            openModal(parseInt(pid));
+                        });
+                    });
+                })
+                .catch(function () {
+                    resultsEl.innerHTML = '<div class="search-dropdown-hint">Помилка пошуку</div>';
+                });
+        }, 300);
+    });
+
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            dd.classList.remove('active');
+        }
+    });
+}
+
+function _highlightMatch(text, query) {
+    if (!query) return text;
+    var escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    var re = new RegExp('(' + escaped + ')', 'gi');
+    return text.replace(re, '<mark>$1</mark>');
+}
+
+function _getCategoryIcon(category) {
+    var icons = {
+        'Електроніка': '&#128187;',
+        'Одяг': '&#128085;',
+        'Дім': '&#127968;',
+        'Спорт': '&#9917;',
+        'Краса': '&#128132;'
+    };
+    return icons[category] || '&#128230;';
+}
+
+// ===== MINI CART =====
+function _initMiniCart() {
+    var wrapper = document.getElementById('mini-cart-wrapper');
+    var dd = document.getElementById('mini-cart-dropdown');
+    if (!wrapper || !dd) return;
+
+    var showTimer, hideTimer;
+
+    wrapper.addEventListener('mouseenter', function () {
+        clearTimeout(hideTimer);
+        showTimer = setTimeout(function () {
+            _loadMiniCart();
+            dd.classList.add('active');
+        }, 150);
+    });
+
+    wrapper.addEventListener('mouseleave', function () {
+        clearTimeout(showTimer);
+        hideTimer = setTimeout(function () {
+            dd.classList.remove('active');
+        }, 200);
+    });
+}
+
+function _loadMiniCart() {
+    var token = localStorage.getItem('token');
+    if (!token) return;
+
+    var itemsEl = document.getElementById('mini-cart-items');
+    var footerEl = document.getElementById('mini-cart-footer');
+    var totalEl = document.getElementById('mini-cart-total-price');
+
+    fetch('/api/cart', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+        var items = data.items || [];
+        if (items.length === 0) {
+            itemsEl.innerHTML = '<div class="mini-cart-empty">Кошик порожній</div>';
+            footerEl.style.display = 'none';
+            return;
+        }
+
+        var html = '';
+        var total = 0;
+        items.forEach(function (item) {
+            var price = item.price * item.quantity;
+            total += price;
+            var imgHtml = item.image_url
+                ? '<img src="' + item.image_url + '" alt="">'
+                : '&#128230;';
+            html += '<div class="mini-cart-item">' +
+                '<div class="mini-cart-item-img">' + imgHtml + '</div>' +
+                '<div class="mini-cart-item-info">' +
+                '<div class="mini-cart-item-title">' + item.title + '</div>' +
+                '<div class="mini-cart-item-price">' + item.quantity + ' × ' + Math.round(item.price) + ' грн</div>' +
+                '</div></div>';
+        });
+        itemsEl.innerHTML = html;
+        totalEl.textContent = Math.round(total) + ' грн';
+        footerEl.style.display = '';
+    })
+    .catch(function () {});
+}
+
+// ===== PRODUCT MODAL =====
 var _currentProductId = null;
 var _currentSellerId = null;
 var _selectedRating = 5;
@@ -224,6 +429,11 @@ function _quickAddToCart(productId) {
         if (data.ok) {
             _showToast('Товар додано в кошик');
             if (window._updateCartCount) window._updateCartCount();
+            var cartBtn = document.getElementById('cart-icon-btn');
+            if (cartBtn) {
+                cartBtn.classList.add('cart-shake');
+                setTimeout(function() { cartBtn.classList.remove('cart-shake'); }, 400);
+            }
             var badge = document.getElementById('cart-badge');
             if (badge) {
                 badge.style.transform = 'scale(1.4)';
