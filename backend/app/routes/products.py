@@ -15,6 +15,9 @@ def products_page():
     search = request.args.get("search", "")
     category = request.args.get("category", "")
     page = request.args.get("page", 1, type=int)
+    sort = request.args.get("sort", "")
+    min_price = request.args.get("min_price", 0, type=float)
+    max_price = request.args.get("max_price", 0, type=float)
 
     if request.headers.get("Accept", "").startswith("application/json"):
         return _products_json(search)
@@ -27,10 +30,23 @@ def products_page():
         conditions.append(f"p.title ILIKE '%{search}%'")
     if category:
         conditions.append(f"p.category = '{category}'")
+    if min_price > 0:
+        conditions.append(f"p.price >= {min_price}")
+    if max_price > 0:
+        conditions.append(f"p.price <= {max_price}")
 
     where = ""
     if conditions:
         where = "WHERE " + " AND ".join(conditions)
+
+    sort_map = {
+        "price_asc": "ORDER BY p.price ASC",
+        "price_desc": "ORDER BY p.price DESC",
+        "newest": "ORDER BY p.created_at DESC",
+        "rating": "ORDER BY avg_rating DESC",
+        "popular": "ORDER BY p.created_at DESC",
+    }
+    order_clause = sort_map.get(sort, "ORDER BY p.created_at DESC")
 
     error_msg = None
     try:
@@ -55,7 +71,7 @@ def products_page():
                 f"LEFT JOIN reviews r ON r.product_id = p.id "
                 f"{where} "
                 f"GROUP BY p.id, u.full_name "
-                f"ORDER BY p.created_at DESC "
+                f"{order_clause} "
                 f"LIMIT {PER_PAGE} OFFSET {offset}"
             )
             rows = cur.fetchall()
@@ -87,6 +103,10 @@ def products_page():
         category=category,
         page=page,
         total_pages=total_pages,
+        total_count=total,
+        sort=sort,
+        min_price=min_price,
+        max_price=max_price,
         error=error_msg,
     )
 

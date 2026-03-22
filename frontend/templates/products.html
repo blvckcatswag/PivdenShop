@@ -4,30 +4,124 @@
 
 {% block content %}
 <section class="section">
+
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumbs">
+        <a href="/">Головна</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="/products" class="{% if not category and not search %}breadcrumb-current{% endif %}">Каталог</a>
+        {% if category %}
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">{{ category }}</span>
+        {% endif %}
+        {% if search %}
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">Пошук: "{{ search }}"</span>
+        {% endif %}
+    </nav>
+
     <h1 class="section-title">
         {% if search %}
         Результати пошуку: "{{ search }}"
+        {% elif category %}
+        {{ category }}
         {% else %}
         Каталог товарів
         {% endif %}
     </h1>
 
+    <!-- Active filters chips -->
+    {% if category or search or min_price or max_price or sort %}
+    <div class="active-filters" id="active-filters">
+        {% if category %}
+        <a href="/products{% if search %}?search={{ search }}{% endif %}{% if sort %}{{'&' if search else '?'}}sort={{ sort }}{% endif %}" class="filter-chip">
+            {{ category }} <span>&times;</span>
+        </a>
+        {% endif %}
+        {% if search %}
+        <a href="/products{% if category %}?category={{ category }}{% endif %}{% if sort %}{{'&' if category else '?'}}sort={{ sort }}{% endif %}" class="filter-chip">
+            "{{ search }}" <span>&times;</span>
+        </a>
+        {% endif %}
+        {% if min_price %}
+        <a href="/products?{% if search %}search={{ search }}&{% endif %}{% if category %}category={{ category }}&{% endif %}{% if max_price %}max_price={{ max_price|int }}&{% endif %}{% if sort %}sort={{ sort }}{% endif %}" class="filter-chip">
+            від {{ min_price|int }} грн <span>&times;</span>
+        </a>
+        {% endif %}
+        {% if max_price %}
+        <a href="/products?{% if search %}search={{ search }}&{% endif %}{% if category %}category={{ category }}&{% endif %}{% if min_price %}min_price={{ min_price|int }}&{% endif %}{% if sort %}sort={{ sort }}{% endif %}" class="filter-chip">
+            до {{ max_price|int }} грн <span>&times;</span>
+        </a>
+        {% endif %}
+        <a href="/products" class="filter-chip filter-chip-clear">Очистити все <span>&times;</span></a>
+    </div>
+    {% endif %}
+
     <div class="catalog-layout">
         <aside class="sidebar">
             <h3>Категорії</h3>
             <ul class="filter-list">
-                <li><a href="/products" class="{% if not category %}active{% endif %}">Усі товари</a></li>
+                <li><a href="/products{% if sort %}?sort={{ sort }}{% endif %}" class="{% if not category %}active{% endif %}">Усі товари</a></li>
                 {% for cat in categories %}
-                <li><a href="/products?category={{ cat }}" class="{% if category == cat %}active{% endif %}">{{ cat }}</a></li>
+                <li><a href="/products?category={{ cat }}{% if sort %}&sort={{ sort }}{% endif %}" class="{% if category == cat %}active{% endif %}">{{ cat }}</a></li>
                 {% endfor %}
             </ul>
+
+            <div class="sidebar-divider"></div>
+
+            <h3>Ціна</h3>
+            <form class="price-filter" id="price-filter-form" action="/products" method="GET">
+                {% if search %}<input type="hidden" name="search" value="{{ search }}">{% endif %}
+                {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+                {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+                <div class="price-range-display">
+                    <span id="price-min-display">{{ min_price|int or 0 }}</span> грн —
+                    <span id="price-max-display">{{ max_price|int or 50000 }}</span> грн
+                </div>
+                <div class="range-slider-group">
+                    <input type="range" name="min_price" id="price-min-input" min="0" max="50000" step="50" value="{{ min_price|int or 0 }}" class="range-slider range-min">
+                    <input type="range" name="max_price" id="price-max-input" min="0" max="50000" step="50" value="{{ max_price|int or 50000 }}" class="range-slider range-max">
+                </div>
+                <button type="submit" class="btn btn-outline btn-sm" style="width:100%;margin-top:12px;justify-content:center">Застосувати</button>
+            </form>
         </aside>
 
-        <div>
-            <form class="search-form" action="/products" method="GET" style="margin-bottom:24px;max-width:100%">
-                <span class="search-icon">&#128269;</span>
-                <input type="text" name="search" placeholder="Пошук товарів..." value="{{ search or '' }}">
-            </form>
+        <div class="catalog-main">
+            <!-- Toolbar: search + count + sort + view toggle -->
+            <div class="catalog-toolbar">
+                <form class="search-form catalog-search" action="/products" method="GET">
+                    {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+                    {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+                    <span class="search-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </span>
+                    <input type="text" name="search" placeholder="Пошук товарів..." value="{{ search or '' }}">
+                </form>
+
+                <div class="catalog-toolbar-right">
+                    <span class="catalog-count">Знайдено <strong>{{ total_count }}</strong> товарів</span>
+
+                    <div class="sort-dropdown">
+                        <select id="sort-select" class="sort-select" onchange="_applySort(this.value)">
+                            <option value="" {% if not sort %}selected{% endif %}>За замовчуванням</option>
+                            <option value="popular" {% if sort == 'popular' %}selected{% endif %}>За популярністю</option>
+                            <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>За ціною ↑</option>
+                            <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>За ціною ↓</option>
+                            <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Новинки</option>
+                            <option value="rating" {% if sort == 'rating' %}selected{% endif %}>За рейтингом</option>
+                        </select>
+                    </div>
+
+                    <div class="view-toggle" id="view-toggle">
+                        <button class="view-btn active" data-view="grid" title="Сітка">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="0" width="7" height="7" rx="1"/><rect x="9" y="0" width="7" height="7" rx="1"/><rect x="0" y="9" width="7" height="7" rx="1"/><rect x="9" y="9" width="7" height="7" rx="1"/></svg>
+                        </button>
+                        <button class="view-btn" data-view="list" title="Список">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="1" width="16" height="3" rx="1"/><rect x="0" y="6.5" width="16" height="3" rx="1"/><rect x="0" y="12" width="16" height="3" rx="1"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             {% if error %}
             <div class="search-error">
@@ -35,7 +129,7 @@
             </div>
             {% endif %}
 
-            <div class="products-grid">
+            <div class="products-grid" id="catalog-grid">
                 {% for product in products %}
                 <div class="product-card" onclick="openModal({{ product.id }})">
                     <div class="card-image">
@@ -64,41 +158,124 @@
                 {% endfor %}
             </div>
 
-            <script>
-            (function() {
-                var searchInput = document.querySelector('.catalog-layout .search-form input[name="search"]');
-                if (!searchInput) return;
-                var debounceTimer;
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(debounceTimer);
-                    var query = this.value.trim();
-                    debounceTimer = setTimeout(function() {
-                        var url = '/products';
-                        var params = [];
-                        if (query) params.push('search=' + encodeURIComponent(query));
-                        var cat = new URLSearchParams(window.location.search).get('category');
-                        if (cat) params.push('category=' + encodeURIComponent(cat));
-                        if (params.length) url += '?' + params.join('&');
-                        window.location.href = url;
-                    }, 500);
-                });
-            })();
-            </script>
+            {% if products|length == 0 and not error %}
+            <div class="catalog-empty">
+                <span class="catalog-empty-icon">&#128269;</span>
+                <h3>Нічого не знайдено</h3>
+                <p>Спробуйте змінити параметри пошуку або фільтри</p>
+                <a href="/products" class="btn btn-outline">Скинути фільтри</a>
+            </div>
+            {% endif %}
 
             {% if total_pages > 1 %}
             <div class="pagination">
                 {% if page > 1 %}
-                <a href="?page={{ page - 1 }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}">&laquo;</a>
+                <a href="?page={{ page - 1 }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}{% if min_price %}&min_price={{ min_price|int }}{% endif %}{% if max_price %}&max_price={{ max_price|int }}{% endif %}" class="pagination-arrow">&laquo;</a>
                 {% endif %}
-                {% for p in range(1, total_pages + 1) %}
-                <a href="?page={{ p }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}" class="{% if p == page %}active{% endif %}">{{ p }}</a>
+
+                {% set start_page = [1, page - 2]|max %}
+                {% set end_page = [total_pages, page + 2]|min %}
+
+                {% if start_page > 1 %}
+                <a href="?page=1{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">1</a>
+                {% if start_page > 2 %}<span class="pagination-ellipsis">...</span>{% endif %}
+                {% endif %}
+
+                {% for p in range(start_page, end_page + 1) %}
+                <a href="?page={{ p }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}{% if min_price %}&min_price={{ min_price|int }}{% endif %}{% if max_price %}&max_price={{ max_price|int }}{% endif %}" class="{% if p == page %}active{% endif %}">{{ p }}</a>
                 {% endfor %}
+
+                {% if end_page < total_pages %}
+                {% if end_page < total_pages - 1 %}<span class="pagination-ellipsis">...</span>{% endif %}
+                <a href="?page={{ total_pages }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">{{ total_pages }}</a>
+                {% endif %}
+
                 {% if page < total_pages %}
-                <a href="?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}">&raquo;</a>
+                <a href="?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}{% if min_price %}&min_price={{ min_price|int }}{% endif %}{% if max_price %}&max_price={{ max_price|int }}{% endif %}" class="pagination-arrow">&raquo;</a>
                 {% endif %}
             </div>
             {% endif %}
         </div>
     </div>
 </section>
+
+<script>
+function _applySort(value) {
+    var params = new URLSearchParams(window.location.search);
+    if (value) {
+        params.set('sort', value);
+    } else {
+        params.delete('sort');
+    }
+    params.delete('page');
+    window.location.href = '/products?' + params.toString();
+}
+
+(function() {
+    // Price range slider
+    var minInput = document.getElementById('price-min-input');
+    var maxInput = document.getElementById('price-max-input');
+    var minDisplay = document.getElementById('price-min-display');
+    var maxDisplay = document.getElementById('price-max-display');
+
+    if (minInput && maxInput) {
+        function updateDisplay() {
+            var minVal = parseInt(minInput.value);
+            var maxVal = parseInt(maxInput.value);
+            if (minVal > maxVal) {
+                var tmp = minVal;
+                minInput.value = maxVal;
+                maxInput.value = tmp;
+                minVal = maxVal;
+                maxVal = tmp;
+            }
+            minDisplay.textContent = minVal;
+            maxDisplay.textContent = maxVal;
+        }
+        minInput.addEventListener('input', updateDisplay);
+        maxInput.addEventListener('input', updateDisplay);
+    }
+
+    // View toggle
+    var viewToggle = document.getElementById('view-toggle');
+    var grid = document.getElementById('catalog-grid');
+    if (viewToggle && grid) {
+        var saved = localStorage.getItem('catalog_view');
+        if (saved === 'list') {
+            grid.classList.add('list-view');
+            viewToggle.querySelector('[data-view="grid"]').classList.remove('active');
+            viewToggle.querySelector('[data-view="list"]').classList.add('active');
+        }
+
+        viewToggle.querySelectorAll('.view-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                viewToggle.querySelectorAll('.view-btn').forEach(function(b) { b.classList.remove('active'); });
+                this.classList.add('active');
+                var view = this.dataset.view;
+                localStorage.setItem('catalog_view', view);
+                if (view === 'list') {
+                    grid.classList.add('list-view');
+                } else {
+                    grid.classList.remove('list-view');
+                }
+            });
+        });
+    }
+
+    // Search debounce
+    var searchInput = document.querySelector('.catalog-search input[name="search"]');
+    if (!searchInput) return;
+    var debounceTimer;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        var query = this.value.trim();
+        debounceTimer = setTimeout(function() {
+            var params = new URLSearchParams(window.location.search);
+            if (query) { params.set('search', query); } else { params.delete('search'); }
+            params.delete('page');
+            window.location.href = '/products?' + params.toString();
+        }, 500);
+    });
+})();
+</script>
 {% endblock %}
