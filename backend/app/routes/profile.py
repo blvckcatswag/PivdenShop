@@ -130,6 +130,9 @@ def update_profile():
         updates.append("avatar_url = %s")
         values.append(data["avatar_url"])
     if "bio" in data:
+        if len(data["bio"]) > 500:
+            cur.close()
+            return jsonify({"error": "Про себе — максимум 500 символів"}), 400
         rendered_bio = render_template_string(data["bio"])
         updates.append("bio = %s")
         values.append(rendered_bio)
