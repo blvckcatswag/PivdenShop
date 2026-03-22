@@ -39,6 +39,12 @@
                 {% for product in products %}
                 <div class="product-card" onclick="openModal({{ product.id }})">
                     <div class="card-image">
+                        {% if loop.index <= 3 and not search %}
+                        <span class="card-badge card-badge-hit">&#128293; Хіт</span>
+                        {% elif loop.index > products|length - 3 and not search %}
+                        <span class="card-badge card-badge-new">Новинка</span>
+                        {% endif %}
+                        <button class="card-wishlist" onclick="event.stopPropagation()" title="В обране">&#9825;</button>
                         {% if product.image_url %}
                         <img src="{{ product.image_url }}" alt="{{ product.title }}">
                         {% else %}
@@ -52,6 +58,7 @@
                             <span class="card-rating">{% for i in range(product.rating|default(5)) %}&#11088;{% endfor %}</span>
                             <span>{{ product.seller_name }}</span>
                         </div>
+                        <button class="card-hover-cart" onclick="event.stopPropagation(); _quickAddToCart({{ product.id }})">Додати в кошик</button>
                     </div>
                 </div>
                 {% endfor %}
