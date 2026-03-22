@@ -12,6 +12,20 @@ document.addEventListener('DOMContentLoaded', function () {
             dropdown.classList.remove('active');
         });
     }
+
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.btn, .btn-gradient');
+        if (!btn) return;
+        var ripple = document.createElement('span');
+        ripple.classList.add('ripple');
+        var rect = btn.getBoundingClientRect();
+        var size = Math.max(rect.width, rect.height);
+        ripple.style.width = ripple.style.height = size + 'px';
+        ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+        ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+        btn.appendChild(ripple);
+        setTimeout(function () { ripple.remove(); }, 600);
+    });
 });
 
 var _currentProductId = null;
@@ -109,7 +123,7 @@ document.addEventListener('click', function (e) {
 
         var token = localStorage.getItem('token');
         if (!token) {
-            alert('Увійдіть щоб залишити відгук');
+            _showToast('Увійдіть щоб залишити відгук', 'error');
             return;
         }
 
@@ -176,7 +190,7 @@ document.addEventListener('click', function (e) {
                 _showToast('Товар додано в кошик');
                 if (window._updateCartCount) window._updateCartCount();
             } else {
-                _showToast(data.error || 'Помилка');
+                _showToast(data.error || 'Помилка', 'error');
             }
         });
     }
@@ -191,14 +205,63 @@ document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closeModal();
 });
 
-function _showToast(msg) {
+function _quickAddToCart(productId) {
+    var token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+    fetch('/api/cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ product_id: productId, quantity: 1 })
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+        if (data.ok) {
+            _showToast('Товар додано в кошик');
+            if (window._updateCartCount) window._updateCartCount();
+            var badge = document.getElementById('cart-badge');
+            if (badge) {
+                badge.style.transform = 'scale(1.4)';
+                setTimeout(function() { badge.style.transform = 'scale(1)'; }, 300);
+            }
+        } else {
+            _showToast(data.error || 'Помилка', 'error');
+        }
+    });
+}
+
+function _showSkeletons(container, count) {
+    container.innerHTML = '';
+    for (var i = 0; i < count; i++) {
+        container.innerHTML +=
+            '<div class="skeleton-card">' +
+            '<div class="skeleton skeleton-image"></div>' +
+            '<div class="skeleton-body">' +
+            '<div class="skeleton skeleton-title"></div>' +
+            '<div class="skeleton skeleton-price"></div>' +
+            '<div class="skeleton skeleton-meta"></div>' +
+            '</div></div>';
+    }
+}
+
+function _showToast(msg, type) {
+    type = type || 'success';
+    var icons = { success: '\u2714', error: '\u2718', info: '\u2139' };
     var toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = msg;
+    toast.className = 'toast toast-' + type;
+    toast.innerHTML =
+        '<span class="toast-icon">' + (icons[type] || '') + '</span>' +
+        '<span class="toast-text">' + msg + '</span>' +
+        '<div class="toast-progress"></div>';
     document.body.appendChild(toast);
     setTimeout(function () { toast.classList.add('visible'); }, 10);
     setTimeout(function () {
         toast.classList.remove('visible');
-        setTimeout(function () { toast.remove(); }, 300);
-    }, 2500);
+        setTimeout(function () { toast.remove(); }, 350);
+    }, 3000);
 }
