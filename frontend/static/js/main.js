@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 var _currentProductId = null;
+var _currentSellerId = null;
 var _selectedRating = 5;
 
 function openModal(productId) {
@@ -33,7 +34,17 @@ function openModal(productId) {
             document.getElementById('modal-description').textContent = p.description || '';
             document.getElementById('modal-category').textContent = p.category || '';
 
+            var imgContainer = document.querySelector('.modal-image');
+            if (imgContainer) {
+                if (p.image_url) {
+                    imgContainer.innerHTML = '<img src="' + p.image_url + '" alt="' + (p.title || '') + '" style="width:100%;height:100%;object-fit:cover">';
+                } else {
+                    imgContainer.innerHTML = '<div class="modal-image-placeholder"></div>';
+                }
+            }
+
             if (p.seller) {
+                _currentSellerId = p.seller.id;
                 document.getElementById('modal-seller-avatar').textContent = p.seller.name ? p.seller.name[0] : 'S';
                 document.getElementById('modal-seller-name').textContent = p.seller.name;
                 document.getElementById('modal-seller-rating').innerHTML = '&#11088; ' + p.seller.rating;
@@ -119,6 +130,30 @@ document.addEventListener('click', function (e) {
         });
     }
 
+    if (e.target && e.target.id === 'modal-contact-seller') {
+        var chatToken = localStorage.getItem('token');
+        if (!chatToken) {
+            window.location.href = '/login';
+            return;
+        }
+        if (!_currentSellerId) return;
+
+        fetch('/api/chats/start', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + chatToken
+            },
+            body: JSON.stringify({ seller_id: _currentSellerId })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.chat_id) {
+                window.location.href = '/chats/' + data.chat_id;
+            }
+        });
+    }
+
     if (e.target && e.target.id === 'modal-add-cart') {
         var cartToken = localStorage.getItem('token');
         if (!cartToken) {
@@ -139,6 +174,7 @@ document.addEventListener('click', function (e) {
             if (data.ok) {
                 closeModal();
                 _showToast('Товар додано в кошик');
+                if (window._updateCartCount) window._updateCartCount();
             } else {
                 _showToast(data.error || 'Помилка');
             }

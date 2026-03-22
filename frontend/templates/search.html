@@ -1,26 +1,30 @@
 {% autoescape false %}
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>Пошук — PivdenShop</title>
-</head>
-<body>
-    <h1>Результати пошуку</h1>
+{% extends "base.html" %}
+
+{% block title %}Пошук — PivdenShop{% endblock %}
+
+{% block content %}
+<section class="section">
+    <h1 class="section-title">Результати пошуку</h1>
     <p>Ви шукали: {{ search }}</p>
 
     {% if products %}
-    <div class="products">
+    <div class="products-grid">
         {% for product in products %}
-        <div class="product-card">
-            <h3>{{ product.title }}</h3>
-            <p>{{ product.price }} грн</p>
+        <div class="product-card" onclick="openModal({{ product.id }})">
+            <div class="card-image">
+                <span class="category-icon">&#128230;</span>
+            </div>
+            <div class="card-body">
+                <div class="card-title">{{ product.title }}</div>
+                <div class="card-price">{{ "%.0f"|format(product.price) }} грн</div>
+            </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <p>Нічого не знайдено за запитом "{{ search }}"</p>
+    <p class="empty-state">Нічого не знайдено за запитом "{{ search }}"</p>
     {% endif %}
-</body>
-</html>
+</section>
+{% endblock %}
 {% endautoescape %}

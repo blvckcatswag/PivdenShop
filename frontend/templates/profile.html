@@ -49,7 +49,7 @@
                     <td>{{ order.id }}</td>
                     <td>{{ order.product_title }}</td>
                     <td>{{ "%.0f"|format(order.price) }} грн</td>
-                    <td><span class="status-badge status-{{ order.status }}">{{ order.status }}</span></td>
+                    <td><span class="status-badge status-{{ order.status }}">{% if order.status == 'pending' %}В обробці{% elif order.status == 'completed' %}Виконано{% elif order.status == 'cancelled' %}Скасовано{% else %}{{ order.status }}{% endif %}</span></td>
                     <td>{{ order.created_at }}</td>
                 </tr>
                 {% endfor %}
@@ -161,17 +161,26 @@ var sellerBtn = document.getElementById('become-seller-btn');
 if (sellerBtn) {
     sellerBtn.addEventListener('click', function() {
         var token = localStorage.getItem('token');
-        if (!token) { alert('Увійдіть для цієї дії'); return; }
+        if (!token) { window.location.href = '/login'; return; }
         if (!confirm('Ви впевнені, що хочете стати продавцем?')) return;
+        sellerBtn.disabled = true;
+        sellerBtn.textContent = 'Обробка...';
         fetch('/api/become-seller', {
             method: 'POST',
             headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
             body: JSON.stringify({})
         }).then(function(r) { return r.json(); }).then(function(data) {
             if (data.is_seller) {
-                alert('Вітаємо! Тепер ви продавець.');
-                location.reload();
+                sellerBtn.textContent = 'Ви продавець!';
+                sellerBtn.style.background = 'var(--success)';
+                setTimeout(function() { location.reload(); }, 1000);
+            } else {
+                sellerBtn.disabled = false;
+                sellerBtn.textContent = 'Стати продавцем';
             }
+        }).catch(function() {
+            sellerBtn.disabled = false;
+            sellerBtn.textContent = 'Стати продавцем';
         });
     });
 }

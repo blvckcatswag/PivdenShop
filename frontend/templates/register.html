@@ -9,6 +9,11 @@
         <h1 class="auth-title">Реєстрація</h1>
         <form id="register-form" class="auth-form" novalidate>
             <div class="form-group">
+                <label for="full_name">Повне ім'я</label>
+                <input type="text" id="full_name" name="full_name" placeholder="Ім'я Прізвище">
+                <span class="field-error" id="name-error"></span>
+            </div>
+            <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" placeholder="your@email.com" required>
                 <span class="field-error" id="email-error"></span>
@@ -42,6 +47,7 @@ document.getElementById('register-form').addEventListener('submit', async functi
     document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
     document.getElementById('form-message').textContent = '';
 
+    const full_name = document.getElementById('full_name').value.trim();
     const email = document.getElementById('email').value.trim();
     const phone = document.getElementById('phone').value.trim();
     const password = document.getElementById('password').value;
@@ -72,7 +78,7 @@ document.getElementById('register-form').addEventListener('submit', async functi
         const resp = await fetch('/register', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({email, phone, password})
+            body: JSON.stringify({email, phone, password, full_name})
         });
         const data = await resp.json();
         if (resp.ok) {
