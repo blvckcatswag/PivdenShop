@@ -95,11 +95,18 @@ def _products_json(search):
     db = get_db()
     cur = db.cursor()
 
+    limit = request.args.get("limit", 0, type=int)
+
     if search:
         query = f"SELECT id, seller_id, title, description, price, category, image_url, created_at FROM products WHERE title ILIKE '%{search}%'"
+        if limit > 0:
+            query += f" LIMIT {int(limit)}"
         cur.execute(query)
     else:
-        cur.execute("SELECT id, seller_id, title, description, price, category, image_url, created_at FROM products")
+        query = "SELECT id, seller_id, title, description, price, category, image_url, created_at FROM products"
+        if limit > 0:
+            query += f" LIMIT {int(limit)}"
+        cur.execute(query)
 
     rows = cur.fetchall()
     cur.close()
@@ -118,6 +125,12 @@ def _products_json(search):
         })
 
     return jsonify({"products": products}), 200
+
+
+@products_bp.route("/api/products", methods=["GET"])
+def api_products():
+    search = request.args.get("search", "")
+    return _products_json(search)
 
 
 @products_bp.route("/api/products/<int:product_id>", methods=["GET"])
