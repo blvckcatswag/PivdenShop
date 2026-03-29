@@ -4,28 +4,75 @@
 
 {% block content %}
 <section class="section">
-    <div class="auth-card">
-        <a href="/" class="auth-close" title="Закрити">&times;</a>
-        <h1 class="auth-title">Вхід</h1>
-        <form id="login-form" class="auth-form" novalidate>
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="your@email.com" required>
-                <span class="field-error" id="email-error"></span>
+    <div class="auth-lamp-layout">
+        <div class="auth-lamp-left">
+            <div class="lamp-scene">
+                <div class="lamp" id="lamp" onclick="toggleLamp()">
+                    <div class="lamp-cord">
+                        <div class="lamp-switch"></div>
+                    </div>
+                    <div class="lamp-shade"></div>
+                    <div class="lamp-pole"></div>
+                    <div class="lamp-base"></div>
+                    <div class="lamp-light-cone"></div>
+                    <div class="lamp-glow"></div>
+                </div>
+                <p class="lamp-hint" id="lamp-hint">Натисни на лампу</p>
             </div>
-            <div class="form-group">
-                <label for="password">Пароль</label>
-                <input type="password" id="password" name="password" placeholder="Ваш пароль" required>
-                <span class="field-error" id="password-error"></span>
+        </div>
+        <div class="auth-lamp-right">
+            <div class="auth-card">
+                <a href="/" class="auth-close" title="Закрити">&times;</a>
+                <h1 class="auth-title">Вхід</h1>
+                <form id="login-form" class="auth-form" novalidate>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="your@email.com" required>
+                        <span class="field-error" id="email-error"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Пароль</label>
+                        <input type="password" id="password" name="password" placeholder="Ваш пароль" required>
+                        <span class="field-error" id="password-error"></span>
+                    </div>
+                    <div class="form-message" id="form-message"></div>
+                    <button type="submit" class="btn-gradient">Увійти</button>
+                </form>
+                <p class="auth-link">Немає акаунту? <a href="/register">Зареєструватися</a></p>
             </div>
-            <div class="form-message" id="form-message"></div>
-            <button type="submit" class="btn-gradient">Увійти</button>
-        </form>
-        <p class="auth-link">Немає акаунту? <a href="/register">Зареєструватися</a></p>
+        </div>
     </div>
 </section>
 
 <script>
+function toggleLamp() {
+    var isOn = document.body.classList.toggle('lamp-on');
+    document.body.classList.toggle('lamp-off', !isOn);
+    localStorage.setItem('lamp', isOn ? '1' : '0');
+
+    var lamp = document.getElementById('lamp');
+    lamp.classList.remove('swinging');
+    void lamp.offsetWidth;
+    lamp.classList.add('swinging');
+
+    var hint = document.getElementById('lamp-hint');
+    hint.classList.add('hidden');
+}
+
+(function() {
+    var saved = localStorage.getItem('lamp');
+    var hint = document.getElementById('lamp-hint');
+    if (saved === '1') {
+        document.body.classList.add('lamp-on');
+        hint.classList.add('hidden');
+    } else if (saved === '0') {
+        document.body.classList.add('lamp-off');
+        hint.classList.add('hidden');
+    } else {
+        document.body.classList.add('lamp-off');
+    }
+})();
+
 document.getElementById('login-form').addEventListener('submit', async function(e) {
     e.preventDefault();
 
